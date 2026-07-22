@@ -1,55 +1,99 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Car, MapPin, Radio } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { LiveMap } from '@/components/shared/live-map';
 import { Loading } from '@/components/shared/states';
 import { useMe } from '@/hooks/use-auth';
-import { useActiveTrip, useTripMutations } from '@/hooks/use-tracking';
-import type { LocationUpdate } from '@/types/api.types';
+import { useDriverGeolocation } from '@/hooks/use-driver-geolocation';
+import { useActiveTrip, useTripMutations, useVehicleLive } from '@/hooks/use-tracking';
+import { useTrackingSocket } from '@/hooks/use-tracking-socket';
+import type { LocationUpdate, MapMarkerInfo } from '@/types/api.types';
 import { toast } from 'sonner';
 
 export default function DriverTripPage() {
   const td = useTranslations('driver');
-  const { data: user } = useMe();
+  const qc = useQueryClient();
+  const { data: user, isLoading: userLoading } = useMe();
   const { data: trip, isLoading } = useActiveTrip();
   const { start, end, postLocation } = useTripMutations();
-  const [location, setLocation] = useState<LocationUpdate | null>(null);
+
+  const vehicleId = trip?.vehicle?.id;
+  const tripActive = !!trip?.id;
+
+  const {
+    location: gpsLocation,
+    gpsState,
+    permission,
+    requestLocation,
+    isSecure,
+  } = useDriverGeolocation(vehicleId, tripActive);
+
+  const [socketLocation, setSocketLocation] = useState<LocationUpdate | null>(null);
+  const { data: liveData } = useVehicleLive(tripActive ? vehicleId : undefined);
+
+  const lastPostRef = useRef(0);
+  const postMutateRef = useRef(postLocation.mutate);
+  postMutateRef.current = postLocation.mutate;
+
+  const onSocketUpdate = useCallback(
+    (loc: LocationUpdate) => {
+      if (vehicleId && loc.vehicleId === vehicleId) {
+        setSocketLocation(loc);
+      }
+    },
+    [vehicleId],
+  );
+  useTrackingSocket(onSocketUpdate);
 
   const vehicle = trip?.vehicle ?? user?.driver?.vehicle;
 
+  const location = gpsLocation ?? socketLocation ?? liveData?.location ?? null;
+
   useEffect(() => {
-    if (!trip?.id || !trip.vehicle?.id) {
-      setLocation(null);
-      return;
-    }
-    if (!navigator.geolocation) return;
+    if (!gpsLocation) return;
+    const now = Date.now();
+    if (now - lastPostRef.current < 8_000) return;
+    lastPostRef.current = now;
+    postMutateRef.current(
+      {
+        lat: gpsLocation.lat,
+        lng: gpsLocation.lng,
+        speed: gpsLocation.speed ?? 0,
+      },
+      {
+        onSuccess: () => {
+          qc.invalidateQueries({ queryKey: ['vehicle-live', gpsLocation.vehicleId] });
+        },
+      },
+    );
+  }, [gpsLocation, qc]);
 
-    const update = () => {
-      navigator.geolocation.getCurrentPosition((pos) => {
-        const loc: LocationUpdate = {
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-          speed: pos.coords.speed ?? 0,
-          vehicleId: trip.vehicle!.id,
-        };
-        setLocation(loc);
-        postLocation.mutate({
-          lat: loc.lat,
-          lng: loc.lng,
-          speed: loc.speed ?? 0,
-        });
-      });
-    };
+  const mapMarkers = useMemo((): MapMarkerInfo[] => {
+    if (!location) return [];
+    return [
+      {
+        location,
+        driver: user
+          ? {
+              name: user.name,
+              phone: user.phone,
+              photoUrl: user.photoUrl,
+              licenseNo: user.driver?.licenseNo,
+            }
+          : undefined,
+        vehicle: {
+          number: trip?.vehicle?.number ?? '',
+          routeName: user?.driver?.vehicle?.route?.name,
+        },
+      },
+    ];
+  }, [location, user, trip?.vehicle?.number]);
 
-    update();
-    const id = setInterval(update, 10_000);
-    return () => clearInterval(id);
-  }, [trip?.id, trip?.vehicle?.id, postLocation]);
-
-  if (isLoading) return <Loading />;
+  if (isLoading || userLoading) return <Loading />;
 
   return (
     <div className="space-y-4 lg:mx-auto lg:max-w-3xl">
@@ -78,11 +122,18 @@ export default function DriverTripPage() {
 
           <Button
             className="mt-6 h-14 w-full text-base"
-            onClick={() =>
+            onClick={() => {
+              if (isSecure && navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                  () => {},
+                  () => {},
+                  { enableHighAccuracy: false, timeout: 10_000 },
+                );
+              }
               start.mutate(undefined, {
                 onError: () => toast.error('Start failed'),
-              })
-            }
+              });
+            }}
             disabled={start.isPending}
           >
             {td('startTrip')}
@@ -113,31 +164,78 @@ export default function DriverTripPage() {
               </div>
             </div>
 
-            {location && (
+            {!isSecure && (
+              <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                {td('gpsInsecure')}
+              </p>
+            )}
+            {gpsState === 'loading' && !location && (
+              <p className="rounded-xl bg-zinc-50 px-4 py-3 text-sm text-zinc-600">
+                {td('gpsLoading')}
+              </p>
+            )}
+            {gpsState === 'prompt' && !location && (
+              <p className="rounded-xl bg-blue-50 px-4 py-3 text-sm text-blue-900">
+                {td('gpsPrompt')}
+              </p>
+            )}
+            {gpsState === 'denied' && (
               <>
-                <LiveMap
-                  locations={[location]}
-                  vehicleId={location.vehicleId}
-                  mapClassName="h-[280px] lg:h-[360px]"
-                />
-                <div className="rounded-xl bg-zinc-50 px-4 py-3">
-                  <p className="text-xs text-zinc-500">{td('currentLocation')}</p>
-                  <p className="font-mono text-sm font-medium text-zinc-900">
-                    {location.lat.toFixed(5)}, {location.lng.toFixed(5)}
-                  </p>
-                  {location.speed != null && location.speed > 0 && (
-                    <p className="mt-0.5 text-xs text-zinc-500">
-                      {Math.round(location.speed * 3.6)} km/h
-                    </p>
-                  )}
-                </div>
+                <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  {td('gpsDenied')}
+                </p>
+                <p className="rounded-xl bg-zinc-50 px-4 py-3 text-xs text-zinc-600">
+                  {td('gpsChromeHint')}
+                </p>
+              </>
+            )}
+            {gpsState === 'unavailable' && !location && (
+              <>
+                <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  {td('gpsUnavailable')}
+                </p>
+                <p className="rounded-xl bg-zinc-50 px-4 py-3 text-xs text-zinc-600">
+                  {td('gpsChromeHint')}
+                </p>
               </>
             )}
 
-            <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
-              {td('gpsActive')}
+            {!location && isSecure && gpsState !== 'denied' && (
+              <Button type="button" className="h-12 w-full" onClick={requestLocation}>
+                {td('enableGps')}
+              </Button>
+            )}
+
+            <div className="overflow-hidden rounded-xl ring-1 ring-zinc-100">
+              <LiveMap
+                vehicleId={vehicleId}
+                markers={mapMarkers}
+                center={location ? [location.lat, location.lng] : undefined}
+                recenterMode="once"
+                mapClassName="h-[280px] lg:h-[360px]"
+              />
             </div>
+
+            <div className="rounded-xl bg-zinc-50 px-4 py-3">
+              <p className="text-xs text-zinc-500">{td('currentLocation')}</p>
+              <p className="font-mono text-sm font-medium text-zinc-900">
+                {location
+                  ? `${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}`
+                  : '—'}
+              </p>
+              {location?.speed != null && location.speed > 0 && (
+                <p className="mt-0.5 text-xs text-zinc-500">
+                  {Math.round(location.speed * 3.6)} km/h
+                </p>
+              )}
+            </div>
+
+            {location && (
+              <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+                {td('gpsActive')}
+              </div>
+            )}
             <Button
               variant="danger"
               className="h-14 w-full text-base"

@@ -14,3 +14,22 @@ body {
   width: 100%;
   z-index: 0;
 }
+
+.leaflet-marker-icon.driver-photo-marker {
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.25);
+  object-fit: cover;
+  background: #ecfdf5;
+}
+
+.leaflet-tooltip.driver-tooltip {
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.leaflet-tooltip.driver-tooltip::before {
+  display: none;
+}

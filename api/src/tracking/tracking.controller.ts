@@ -36,7 +36,7 @@ export class TrackingController {
     return this.service.getAllLive(user);
   }
 
-  @Roles(Role.ADMIN, Role.GUARDIAN)
+  @Roles(Role.ADMIN, Role.GUARDIAN, Role.DRIVER)
   @Get('vehicles/:id')
   vehicleLive(@CurrentUser() user: AuthUser, @Param('id') id: string) {
     return this.service.getVehicleLive(user, id);

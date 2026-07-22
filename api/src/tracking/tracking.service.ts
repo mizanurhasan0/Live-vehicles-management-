@@ -50,7 +50,13 @@ export class TrackingService {
     const vehicles = await this.prisma.vehicle.findMany({
       where: { madrasaId: user.madrasaId, status: { not: 'INACTIVE' } },
       include: {
-        driver: { include: { user: { select: { name: true, phone: true } } } },
+        route: { select: { name: true } },
+        driver: {
+          select: {
+            licenseNo: true,
+            user: { select: { name: true, phone: true, photoUrl: true } },
+          },
+        },
       },
     });
     return Promise.all(
@@ -169,6 +175,12 @@ export class TrackingService {
         where: { guardianId: user.guardianId, vehicleId },
       });
       if (student) return;
+    }
+    if (user.role === Role.DRIVER && user.driverId) {
+      const vehicle = await this.prisma.vehicle.findFirst({
+        where: { id: vehicleId, driverId: user.driverId },
+      });
+      if (vehicle) return;
     }
     throw new ForbiddenException();
   }

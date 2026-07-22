@@ -1,41 +1,82 @@
 'use client';
 
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet';
-import type { LocationUpdate } from '@/types/api.types';
-import { autoIcon } from './map-icons';
+import { MapContainer, Marker, Popup, TileLayer, Tooltip } from 'react-leaflet';
+import { DriverMarkerDetails } from './driver-marker-details';
+import { autoIcon, createDriverMarkerIcon } from './map-icons';
 import { MapRecenter } from './map-recenter';
+import { MapInvalidateSize } from './map-invalidate-size';
+import type { MapMarkerInfo } from '@/types/api.types';
+
+function MapMarker({ marker }: { marker: MapMarkerInfo }) {
+  const { location } = marker;
+  const icon = createDriverMarkerIcon(marker.driver?.photoUrl);
+  const hasDetails = !!(marker.driver?.name || marker.vehicle?.number);
+
+  return (
+    <Marker
+      position={[location.lat, location.lng]}
+      icon={icon}
+      zIndexOffset={1000}
+    >
+      {hasDetails && (
+        <>
+          <Tooltip direction="top" offset={[0, -40]} opacity={1} className="driver-tooltip">
+            <DriverMarkerDetails marker={marker} />
+          </Tooltip>
+          <Popup>
+            <DriverMarkerDetails marker={marker} />
+          </Popup>
+        </>
+      )}
+      {!hasDetails && (
+        <Popup>
+          Vehicle: {location.vehicleId}
+          {location.speed != null && (
+            <div>Speed: {Math.round(location.speed * 3.6)} km/h</div>
+          )}
+        </Popup>
+      )}
+    </Marker>
+  );
+}
 
 export default function LiveMapInner({
-  locations,
+  markers,
   center,
   fallbackCenter,
   fallbackLabel,
   recenter = true,
+  recenterMode = 'follow',
   mapClassName = 'h-[400px]',
 }: {
-  locations: LocationUpdate[];
+  markers: MapMarkerInfo[];
   center: [number, number];
   fallbackCenter?: [number, number];
   fallbackLabel?: string;
   recenter?: boolean;
+  recenterMode?: 'once' | 'follow' | 'off';
   mapClassName?: string;
 }) {
-  const hasLive = locations.length > 0;
-  const mapCenter = hasLive ? [locations[0].lat, locations[0].lng] as [number, number] : center;
+  const hasLive = markers.length > 0;
+  const mapCenter = hasLive
+    ? ([markers[0].location.lat, markers[0].location.lng] as [number, number])
+    : center;
 
   return (
     <MapContainer center={mapCenter} zoom={13} className={`w-full rounded-xl ${mapClassName}`}>
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <MapInvalidateSize />
       {recenter && hasLive && (
-        <MapRecenter center={[locations[0].lat, locations[0].lng]} />
+        <MapRecenter
+          center={[markers[0].location.lat, markers[0].location.lng]}
+          mode={recenterMode}
+        />
       )}
-      {locations.map((loc) => (
-        <Marker key={loc.vehicleId} position={[loc.lat, loc.lng]} icon={autoIcon}>
-          <Popup>
-            Vehicle: {loc.vehicleId}
-            {loc.speed != null && <div>Speed: {loc.speed} km/h</div>}
-          </Popup>
-        </Marker>
+      {markers.map((marker) => (
+        <MapMarker
+          key={`${marker.location.vehicleId}-${marker.driver?.photoUrl ?? 'auto'}`}
+          marker={marker}
+        />
       ))}
       {!hasLive && fallbackCenter && (
         <Marker position={fallbackCenter} icon={autoIcon}>

@@ -1,9 +1,12 @@
 import { apiGet, apiPost } from '@/lib/api-client';
-import type { Eta, LiveVehicle, LocationUpdate, Paginated, Trip } from '@/types/api.types';
+import type { Eta, LiveVehicle, LocationUpdate, Paginated, Trip, Vehicle } from '@/types/api.types';
 
 export const trackingService = {
   allLive: () => apiGet<LiveVehicle[]>('/tracking/vehicles'),
-  vehicleLive: (id: string) => apiGet<{ vehicle: object; location: LocationUpdate | null }>(`/tracking/vehicles/${id}`),
+  vehicleLive: (id: string) =>
+    apiGet<{ vehicle: Vehicle; location: LocationUpdate | null }>(
+      `/tracking/vehicles/${id}`,
+    ),
   eta: (id: string, studentId?: string) =>
     apiGet<Eta>(`/tracking/vehicles/${id}/eta`, studentId ? { studentId } : {}),
   postLocation: (body: object) => apiPost('/tracking/location', body),

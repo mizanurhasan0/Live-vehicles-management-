@@ -60,7 +60,14 @@
     "license": "লাইসেন্স নম্বর",
     "assignedVehicle": "নির্ধারিত যানবাহন",
     "currentLocation": "বর্তমান অবস্থান",
-    "noVehicle": "কোনো যানবাহন নির্ধারিত নেই"
+    "noVehicle": "কোনো যানবাহন নির্ধারিত নেই",
+    "gpsLoading": "আপনার অবস্থান খুঁজছি...",
+    "gpsDenied": "লোকেশন অনুমতি নেই। লাইভ ম্যাপ দেখতে GPS চালু করুন।",
+    "enableGps": "GPS চালু করুন",
+    "gpsInsecure": "লোকেশনের জন্য HTTPS দরকার। মোবাইলে localhost বা secure URL ব্যবহার করুন।",
+    "gpsUnavailable": "GPS পাওয়া যায়নি। Enable GPS ট্যাপ করুন এবং ব্রাউজারে লোকেশন অনুমতি দিন।",
+    "gpsPrompt": "Chrome লোকেশন চাইবে — Allow ট্যাপ করুন।",
+    "gpsChromeHint": "Chrome: address bar-এ তালা আইকন → Site settings → Location → Allow। Mac-এ: System Settings → Privacy → Location Services → Google Chrome → ON।"
   },
   "mobile": {
     "home": "হোম",
@@ -116,5 +123,12 @@
     "totalIncome": "মাসিক আয়",
     "pendingPayments": "বকেয়া পেমেন্ট",
     "vehicleUsage": "যানবাহন ব্যবহার"
+  },
+  "map": {
+    "driverDetails": "ড্রাইভার",
+    "route": "রুট",
+    "speed": "গতি",
+    "vehicleId": "যানবাহন ID: {id}",
+    "tapForDetails": "বিস্তারিত দেখতে মার্কারে ট্যাপ করুন"
   }
 }

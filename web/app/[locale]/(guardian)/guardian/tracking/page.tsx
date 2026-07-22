@@ -10,7 +10,7 @@ import { Loading } from '@/components/shared/states';
 import { useEta, useVehicleLive } from '@/hooks/use-tracking';
 import { useTrackingSocket } from '@/hooks/use-tracking-socket';
 import { useStudents } from '@/hooks/use-students';
-import type { LocationUpdate, Student } from '@/types/api.types';
+import type { LocationUpdate, MapMarkerInfo, Student } from '@/types/api.types';
 
 function ChildPicker({
   students,
@@ -71,8 +71,31 @@ function TrackingContent() {
   useTrackingSocket(onUpdate);
 
   const location = live ?? data?.location ?? null;
-  const locations = useMemo(() => (location ? [location] : []), [location]);
   const hasLiveGps = !!location;
+
+  const vehicleNumber =
+    data?.vehicle?.number ?? vehicleId;
+
+  const mapMarkers = useMemo((): MapMarkerInfo[] => {
+    if (!location) return [];
+    const v = data?.vehicle;
+    const driver = v?.driver;
+    return [
+      {
+        location,
+        driver: {
+          name: driver?.user?.name ?? '',
+          phone: driver?.user?.phone,
+          photoUrl: driver?.user?.photoUrl,
+          licenseNo: driver?.licenseNo,
+        },
+        vehicle: {
+          number: vehicleNumber,
+          routeName: v?.route?.name,
+        },
+      },
+    ];
+  }, [location, data?.vehicle, vehicleNumber]);
 
   const fallbackCenter =
     student?.pickupLat != null && student?.pickupLng != null
@@ -95,9 +118,6 @@ function TrackingContent() {
   }
 
   if (isLoading) return <Loading />;
-
-  const vehicleNumber =
-    (data?.vehicle as { number?: string } | undefined)?.number ?? vehicleId;
 
   return (
     <div className="space-y-3 lg:grid lg:grid-cols-12 lg:items-start lg:gap-6 lg:space-y-0">
@@ -141,7 +161,7 @@ function TrackingContent() {
       <div className="overflow-hidden rounded-2xl shadow-sm ring-1 ring-zinc-100 lg:col-span-8">
         <LiveMap
           vehicleId={vehicleId}
-          locations={locations}
+          markers={mapMarkers}
           center={
             location ? [location.lat, location.lng] : fallbackCenter
           }

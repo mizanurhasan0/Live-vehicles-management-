@@ -90,6 +90,10 @@ export class TrackingGateway implements OnGatewayConnection {
       .to(`madrasa:${user.madrasaId}`)
       .emit('vehicle:location', update);
 
+    this.server
+      .to(`driver:${user.driverId}`)
+      .emit('vehicle:location', update);
+
     const students = await this.prisma.student.findMany({
       where: { vehicleId: trip.vehicleId },
       select: { guardianId: true },

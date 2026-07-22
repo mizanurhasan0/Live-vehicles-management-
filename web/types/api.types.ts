@@ -39,7 +39,10 @@ export type Vehicle = {
   status: string;
   driverId?: string;
   routeId?: string;
-  driver?: { user?: { name: string; phone: string } };
+  driver?: {
+    licenseNo?: string;
+    user?: { name: string; phone: string; photoUrl?: string | null };
+  };
   route?: { name: string };
 };
 
@@ -113,6 +116,17 @@ export type LocationUpdate = {
   speed?: number;
   vehicleId: string;
   updatedAt?: string;
+};
+
+export type MapMarkerInfo = {
+  location: LocationUpdate;
+  driver?: {
+    name: string;
+    phone?: string;
+    photoUrl?: string | null;
+    licenseNo?: string;
+  };
+  vehicle?: { number: string; routeName?: string };
 };
 
 export type Eta = {

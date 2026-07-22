@@ -60,7 +60,14 @@
     "license": "License number",
     "assignedVehicle": "Assigned vehicle",
     "currentLocation": "Current location",
-    "noVehicle": "No vehicle assigned"
+    "noVehicle": "No vehicle assigned",
+    "gpsLoading": "Getting your location...",
+    "gpsDenied": "Location permission denied. Enable GPS to see live map.",
+    "enableGps": "Enable GPS",
+    "gpsInsecure": "Location needs HTTPS. Use localhost or a secure URL on mobile.",
+    "gpsUnavailable": "Could not get GPS. Tap Enable GPS and allow location in your browser.",
+    "gpsPrompt": "Chrome will ask for location — tap Allow.",
+    "gpsChromeHint": "Chrome: click the lock icon in the address bar → Site settings → Location → Allow. On Mac: System Settings → Privacy → Location Services → Google Chrome → ON."
   },
   "mobile": {
     "home": "Home",
@@ -116,5 +123,12 @@
     "totalIncome": "Monthly Income",
     "pendingPayments": "Pending Payments",
     "vehicleUsage": "Vehicle Usage"
+  },
+  "map": {
+    "driverDetails": "Driver",
+    "route": "Route",
+    "speed": "Speed",
+    "vehicleId": "Vehicle ID: {id}",
+    "tapForDetails": "Tap marker for details"
   }
 }
