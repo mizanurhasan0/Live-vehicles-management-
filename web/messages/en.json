@@ -41,6 +41,7 @@
     "name": "Name",
     "phone": "Phone",
     "submit": "Submit",
+    "select": "Select",
     "success": "Success",
     "error": "Something went wrong"
   },
@@ -54,7 +55,23 @@
   "guardian": {
     "payFee": "Pay Fee",
     "liveLocation": "Live Location",
-    "eta": "ETA"
+    "eta": "ETA",
+    "selectStudent": "Student",
+    "payWithBkash": "Pay with bKash",
+    "confirmPayment": "Confirm Payment",
+    "openBkashAgain": "Open bKash again",
+    "sandboxHintTitle": "Complete payment in bKash sandbox",
+    "sandboxHint": "Use sandbox wallet 01770618575, OTP 123456, PIN 12121. After finishing in bKash, click Confirm Payment here.",
+    "paymentHistory": "Payment History",
+    "selectChild": "Select a child from the home page.",
+    "gpsUnavailable": "Live GPS unavailable — showing pickup point",
+    "noLocationData": "No location data available yet",
+    "pickupPoint": "Pickup point",
+    "vehicleNumber": "Vehicle: {number}",
+    "paymentCallback": "Payment Callback",
+    "callbackHint": "If you completed payment in bKash, confirm below to finalize.",
+    "backToPayments": "Back to Payments",
+    "confirmingPayment": "Confirming payment..."
   },
   "admin": {
     "totalIncome": "Monthly Income",

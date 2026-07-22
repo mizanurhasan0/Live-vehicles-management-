@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { paymentService, reportService, trackingService, tripService } from '@/services/tracking.service';
 import { currentMonth } from '@/lib/utils';
+import { toast } from 'sonner';
 
 export function useLiveVehicles() {
   return useQuery({
@@ -21,11 +22,11 @@ export function useVehicleLive(id?: string) {
   });
 }
 
-export function useEta(vehicleId?: string, studentId?: string) {
+export function useEta(vehicleId?: string, studentId?: string, enabled = true) {
   return useQuery({
     queryKey: ['eta', vehicleId, studentId],
     queryFn: () => trackingService.eta(vehicleId!, studentId),
-    enabled: !!vehicleId,
+    enabled: !!vehicleId && enabled,
     refetchInterval: 30_000,
   });
 }
@@ -65,11 +66,44 @@ export function usePaymentMutations() {
     initiate: useMutation({
       mutationFn: ({ studentId, month }: { studentId: string; month: string }) =>
         paymentService.initiate(studentId, month),
-      onSuccess: invalidate,
+      onSuccess: () => {
+        invalidate();
+        toast.success('Payment initiated — complete in bKash sandbox');
+      },
+      onError: (err: Error) => {
+        toast.error(err.message || 'Failed to initiate payment');
+      },
     }),
     execute: useMutation({
       mutationFn: (paymentId: string) => paymentService.execute(paymentId),
-      onSuccess: invalidate,
+      onSuccess: (data) => {
+        invalidate();
+        const status = (data as { status?: string })?.status;
+        if (status === 'COMPLETED') {
+          toast.success('Payment completed successfully');
+        } else {
+          toast.error('Payment was not completed');
+        }
+      },
+      onError: (err: Error) => {
+        toast.error(err.message || 'Failed to confirm payment');
+      },
+    }),
+    callback: useMutation({
+      mutationFn: (body: { paymentID: string; trxID?: string }) =>
+        paymentService.callback(body),
+      onSuccess: (data) => {
+        invalidate();
+        const status = (data as { status?: string })?.status;
+        if (status === 'COMPLETED') {
+          toast.success('Payment completed successfully');
+        } else {
+          toast.error('Payment was not completed');
+        }
+      },
+      onError: (err: Error) => {
+        toast.error(err.message || 'Failed to confirm payment');
+      },
     }),
   };
 }

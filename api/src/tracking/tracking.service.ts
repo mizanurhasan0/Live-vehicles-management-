@@ -3,13 +3,17 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Role, TripStatus } from '@prisma/client';
+import { Role, TripStatus, type LocationLog } from '@prisma/client';
 import { AuthUser } from '../common/types/jwt-payload.type';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
 import { LocationDto } from './dto/tracking.dto';
 import { OsrmService } from './osrm.service';
 import { PhoneGpsSource } from './phone-gps.source';
+import {
+  parseCachedLocation,
+  VehicleLocation,
+} from './types/vehicle-location.type';
 
 @Injectable()
 export class TrackingService {
@@ -67,7 +71,22 @@ export class TrackingService {
       },
     });
     if (!vehicle) throw new NotFoundException('Vehicle not found');
-    return { vehicle, location: await this.getCachedLocation(vehicleId) };
+
+    let location: VehicleLocation | null =
+      await this.getCachedLocation(vehicleId);
+    if (!location) {
+      const lastLog = await this.prisma.locationLog.findFirst({
+        where: {
+          trip: { vehicleId, status: TripStatus.STARTED },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+      if (lastLog) {
+        location = this.locationFromLog(lastLog, vehicleId);
+      }
+    }
+
+    return { vehicle, location };
   }
 
   async getEta(user: AuthUser, vehicleId: string, studentId?: string) {
@@ -118,11 +137,29 @@ export class TrackingService {
     };
   }
 
-  private async getCachedLocation(vehicleId: string) {
+  private async getCachedLocation(
+    vehicleId: string,
+  ): Promise<VehicleLocation | null> {
     const raw = await this.redis.client.get(
       this.redis.vehicleLocationKey(vehicleId),
     );
-    return raw ? JSON.parse(raw) : null;
+    if (!raw) return null;
+    return parseCachedLocation(raw);
+  }
+
+  private locationFromLog(
+    log: LocationLog,
+    vehicleId: string,
+  ): VehicleLocation {
+    return {
+      lat: log.lat,
+      lng: log.lng,
+      speed: log.speed ?? undefined,
+      heading: log.heading ?? undefined,
+      vehicleId,
+      source: log.source,
+      timestamp: log.createdAt.toISOString(),
+    };
   }
 
   private async assertVehicleAccess(user: AuthUser, vehicleId: string) {

@@ -22,6 +22,8 @@ export const paymentService = {
   initiate: (studentId: string, month: string) =>
     apiPost('/payments/initiate', { studentId, month }),
   execute: (paymentId: string) => apiPost('/payments/execute', { paymentId }),
+  callback: (body: { paymentID: string; trxID?: string; status?: string }) =>
+    apiPost('/payments/callback', body),
   invoice: (id: string) => apiGet(`/payments/${id}/invoice`),
 };
 

@@ -49,7 +49,13 @@ export class PaymentsService {
       },
     });
     if (pending?.bkashPaymentId) {
-      return { payment: pending, bkash: { paymentID: pending.bkashPaymentId } };
+      return {
+        payment: pending,
+        bkash: {
+          paymentID: pending.bkashPaymentId,
+          bkashURL: null,
+        },
+      };
     }
 
     const amount = Number(student.monthlyFee);
@@ -68,7 +74,10 @@ export class PaymentsService {
       where: { id: payment.id },
       data: { bkashPaymentId: bkash.paymentID },
     });
-    return { payment, bkash };
+    return {
+      payment: { ...payment, bkashPaymentId: bkash.paymentID },
+      bkash: { paymentID: bkash.paymentID, bkashURL: bkash.bkashURL },
+    };
   }
 
   async execute(user: AuthUser, paymentId: string) {
@@ -150,7 +159,17 @@ export class PaymentsService {
 
   private async finalizePayment(id: string, result: Record<string, string>) {
     const completed =
-      result.transactionStatus === 'Completed' || result.statusCode === '0000';
+      result.transactionStatus === 'Completed' ||
+      result.statusCode === '0000' ||
+      result.statusMessage === 'Successful' ||
+      !!result.trxID;
+
+    if (!completed && result.statusCode && result.statusCode !== '0000') {
+      throw new BadRequestException(
+        result.statusMessage ?? 'bKash payment not completed',
+      );
+    }
+
     return this.prisma.payment.update({
       where: { id },
       data: completed

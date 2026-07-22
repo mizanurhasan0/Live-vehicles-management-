@@ -13,6 +13,9 @@ export default registerAs('app', () => ({
     appSecret: process.env.BKASH_APP_SECRET,
     username: process.env.BKASH_USERNAME,
     password: process.env.BKASH_PASSWORD,
+    callbackUrl:
+      process.env.BKASH_CALLBACK_URL ??
+      'http://localhost:3000/bn/guardian/payments/callback',
   },
   osrmBaseUrl: process.env.OSRM_BASE_URL ?? 'https://router.project-osrm.org',
 }));

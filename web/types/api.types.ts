@@ -54,6 +54,8 @@ export type Student = {
   class?: string;
   pickupPoint: string;
   dropPoint: string;
+  pickupLat?: number;
+  pickupLng?: number;
   monthlyFee: number | string;
   vehicleId?: string;
   guardianId: string;

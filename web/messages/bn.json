@@ -41,6 +41,7 @@
     "name": "নাম",
     "phone": "ফোন",
     "submit": "জমা দিন",
+    "select": "নির্বাচন",
     "success": "সফল",
     "error": "ত্রুটি হয়েছে"
   },
@@ -54,7 +55,23 @@
   "guardian": {
     "payFee": "ফি পরিশোধ",
     "liveLocation": "লাইভ লোকেশন",
-    "eta": "আEstimated সময়"
+    "eta": "আনুমানিক সময়",
+    "selectStudent": "শিক্ষার্থী",
+    "payWithBkash": "bKash দিয়ে পরিশোধ",
+    "confirmPayment": "পেমেন্ট নিশ্চিত করুন",
+    "openBkashAgain": "আবার bKash খুলুন",
+    "sandboxHintTitle": "bKash স্যান্ডবক্সে পেমেন্ট সম্পন্ন করুন",
+    "sandboxHint": "স্যান্ডবক্স ওয়ালেট 01770618575, OTP 123456, PIN 12121 ব্যবহার করুন। bKash-এ শেষ করার পর এখানে 'পেমেন্ট নিশ্চিত করুন' ক্লিক করুন।",
+    "paymentHistory": "পেমেন্ট ইতিহাস",
+    "selectChild": "হোম পেজ থেকে সন্তান নির্বাচন করুন।",
+    "gpsUnavailable": "লাইভ GPS unavailable — পিকআপ পয়েন্ট দেখানো হচ্ছে",
+    "noLocationData": "এখনও কোনো লোকেশন ডেটা নেই",
+    "pickupPoint": "পিকআপ পয়েন্ট",
+    "vehicleNumber": "যানবাহন: {number}",
+    "paymentCallback": "পেমেন্ট কলব্যাক",
+    "callbackHint": "bKash-এ পেমেন্ট সম্পন্ন করলে, নিচে নিশ্চিত করুন।",
+    "backToPayments": "পেমেন্টে ফিরে যান",
+    "confirmingPayment": "পেমেন্ট নিশ্চিত করা হচ্ছে..."
   },
   "admin": {
     "totalIncome": "মাসিক আয়",
