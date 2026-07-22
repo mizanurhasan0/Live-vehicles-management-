@@ -126,7 +126,7 @@
     "vehicleUsage": "Vehicle Usage",
     "trackingNoVehicles": "No active vehicles in your fleet.",
     "trackingSummary": "{live} of {total} vehicles with live GPS",
-    "trackingOfflineHint": "Vehicles without live GPS are shown at their route start point."
+    "trackingOfflineHint": "Only vehicles on an active trip with live GPS appear on the map. Start a trip on the driver phone and allow location access."
   },
   "map": {
     "driverDetails": "Driver",

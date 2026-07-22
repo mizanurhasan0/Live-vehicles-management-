@@ -55,9 +55,7 @@ export default function AdminTrackingPage() {
     });
   }, [data, live]);
 
-  const liveCount = markers.filter(
-    (m) => m.location.source !== 'ROUTE_STOP',
-  ).length;
+  const liveCount = markers.length;
   const totalVehicles = data?.length ?? 0;
 
   if (isLoading) return <Loading />;

@@ -53,12 +53,7 @@ export class TrackingService {
     const vehicles = await this.prisma.vehicle.findMany({
       where: { madrasaId: user.madrasaId, status: { not: 'INACTIVE' } },
       include: {
-        route: {
-          select: {
-            name: true,
-            stops: { orderBy: { order: 'asc' }, take: 1 },
-          },
-        },
+        route: { select: { name: true } },
         driver: {
           select: {
             licenseNo: true,
@@ -70,10 +65,7 @@ export class TrackingService {
     return Promise.all(
       vehicles.map(async (v) => ({
         vehicle: v,
-        location: await this.resolveVehicleLocation(
-          v.id,
-          v.route?.stops[0] ?? null,
-        ),
+        location: await this.resolveVehicleLocation(v.id),
       })),
     );
   }
@@ -84,15 +76,12 @@ export class TrackingService {
       where: { id: vehicleId, madrasaId: user.madrasaId },
       include: {
         driver: { include: { user: true } },
-        route: { include: { stops: { orderBy: { order: 'asc' }, take: 1 } } },
+        route: { select: { name: true } },
       },
     });
     if (!vehicle) throw new NotFoundException('Vehicle not found');
 
-    const location = await this.resolveVehicleLocation(
-      vehicleId,
-      vehicle.route?.stops[0] ?? null,
-    );
+    const location = await this.resolveVehicleLocation(vehicleId);
 
     return { vehicle, location };
   }
@@ -145,9 +134,9 @@ export class TrackingService {
     };
   }
 
+  /** Live GPS only: Redis cache or logs from an active trip. */
   private async resolveVehicleLocation(
     vehicleId: string,
-    firstStop?: { lat: number; lng: number } | null,
   ): Promise<VehicleLocation | null> {
     const cached = await this.getCachedLocation(vehicleId);
     if (cached) return cached;
@@ -157,21 +146,6 @@ export class TrackingService {
       orderBy: { createdAt: 'desc' },
     });
     if (activeLog) return this.locationFromLog(activeLog, vehicleId);
-
-    const recentLog = await this.prisma.locationLog.findFirst({
-      where: { trip: { vehicleId } },
-      orderBy: { createdAt: 'desc' },
-    });
-    if (recentLog) return this.locationFromLog(recentLog, vehicleId);
-
-    if (firstStop) {
-      return {
-        lat: firstStop.lat,
-        lng: firstStop.lng,
-        vehicleId,
-        source: 'ROUTE_STOP',
-      };
-    }
 
     return null;
   }
