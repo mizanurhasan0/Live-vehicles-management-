@@ -50,6 +50,9 @@ export default function DriverTripPage() {
   useTrackingSocket(onSocketUpdate);
 
   const vehicle = trip?.vehicle ?? user?.driver?.vehicle;
+  const isDesktop =
+    typeof window !== 'undefined' &&
+    !/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 
   const location = gpsLocation ?? socketLocation ?? liveData?.location ?? null;
 
@@ -79,11 +82,11 @@ export default function DriverTripPage() {
         location,
         driver: user
           ? {
-              name: user.name,
-              phone: user.phone,
-              photoUrl: user.photoUrl,
-              licenseNo: user.driver?.licenseNo,
-            }
+            name: user.name,
+            phone: user.phone,
+            photoUrl: user.photoUrl,
+            licenseNo: user.driver?.licenseNo,
+          }
           : undefined,
         vehicle: {
           number: trip?.vehicle?.number ?? '',
@@ -125,8 +128,8 @@ export default function DriverTripPage() {
             onClick={() => {
               if (isSecure && navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(
-                  () => {},
-                  () => {},
+                  () => { },
+                  () => { },
                   { enableHighAccuracy: false, timeout: 10_000 },
                 );
               }
@@ -197,6 +200,11 @@ export default function DriverTripPage() {
                 <p className="rounded-xl bg-zinc-50 px-4 py-3 text-xs text-zinc-600">
                   {td('gpsChromeHint')}
                 </p>
+                {isDesktop && (
+                  <p className="rounded-xl bg-blue-50 px-4 py-3 text-xs text-blue-900">
+                    {td('gpsDesktopHint')}
+                  </p>
+                )}
               </>
             )}
 

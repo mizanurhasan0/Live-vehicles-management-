@@ -67,7 +67,8 @@
     "gpsInsecure": "Location needs HTTPS. Use localhost or a secure URL on mobile.",
     "gpsUnavailable": "Could not get GPS. Tap Enable GPS and allow location in your browser.",
     "gpsPrompt": "Chrome will ask for location — tap Allow.",
-    "gpsChromeHint": "Chrome: click the lock icon in the address bar → Site settings → Location → Allow. On Mac: System Settings → Privacy → Location Services → Google Chrome → ON."
+    "gpsChromeHint": "Chrome: click the lock icon in the address bar → Site settings → Location → Allow. On Mac: System Settings → Privacy → Location Services → Google Chrome → ON.",
+    "gpsDesktopHint": "Mac Mini and most desktops have no GPS chip. Chrome uses Wi‑Fi/network location and often fails on Ethernet-only setups. Turn Wi‑Fi ON, or use a phone for live driver tracking."
   },
   "mobile": {
     "home": "Home",

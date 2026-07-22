@@ -67,7 +67,8 @@
     "gpsInsecure": "লোকেশনের জন্য HTTPS দরকার। মোবাইলে localhost বা secure URL ব্যবহার করুন।",
     "gpsUnavailable": "GPS পাওয়া যায়নি। Enable GPS ট্যাপ করুন এবং ব্রাউজারে লোকেশন অনুমতি দিন।",
     "gpsPrompt": "Chrome লোকেশন চাইবে — Allow ট্যাপ করুন।",
-    "gpsChromeHint": "Chrome: address bar-এ তালা আইকন → Site settings → Location → Allow। Mac-এ: System Settings → Privacy → Location Services → Google Chrome → ON।"
+    "gpsChromeHint": "Chrome: address bar-এ তালা আইকন → Site settings → Location → Allow। Mac-এ: System Settings → Privacy → Location Services → Google Chrome → ON।",
+    "gpsDesktopHint": "Mac Mini ও বেশিরভাগ ডেস্কটোপ কম্পিউটারে GPS চিপ নেই। Chrome Wi‑Fi/নেটওয়ার্ক দিয়ে লোকেশন ধরে — Ethernet-only-তে প্রায়ই কাজ করে না। Wi‑Fi চালু করুন, অথবা লাইভ ট্র্যাকিংয়ের জন্য ফোন ব্যবহার করুন।"
   },
   "mobile": {
     "home": "হোম",
