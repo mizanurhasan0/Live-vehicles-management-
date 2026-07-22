@@ -1,5 +1,5 @@
 import axios, { type AxiosRequestConfig } from 'axios';
-import { useAuthStore } from '@/stores/auth.store';
+import { useAuthStore, hasAuthStoreHydrated } from '@/stores/auth.store';
 
 const baseURL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
 
@@ -21,7 +21,7 @@ api.interceptors.response.use(
 
     const { refreshToken, setTokens, clearAuth } = useAuthStore.getState();
     if (!refreshToken) {
-      clearAuth();
+      if (hasAuthStoreHydrated()) clearAuth();
       throw error;
     }
 
@@ -40,7 +40,9 @@ api.interceptors.response.use(
       };
       return api(original);
     } catch {
-      clearAuth();
+      if (hasAuthStoreHydrated()) {
+        clearAuth();
+      }
       throw error;
     } finally {
       refreshing = false;

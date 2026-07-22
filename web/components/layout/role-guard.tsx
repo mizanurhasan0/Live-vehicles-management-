@@ -20,12 +20,18 @@ export function RoleGuard({
 }) {
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
+  const accessToken = useAuthStore((s) => s.accessToken);
   const allowed = Array.isArray(role) ? role : [role];
 
   useEffect(() => {
-    if (!user) router.replace('/login');
-    else if (!allowed.includes(user.role)) router.replace(rolePath[user.role]);
-  }, [user, allowed, router]);
+    if (!user && !accessToken) {
+      router.replace('/login');
+      return;
+    }
+    if (user && !allowed.includes(user.role)) {
+      router.replace(rolePath[user.role]);
+    }
+  }, [user, accessToken, allowed, router]);
 
   if (!user || !allowed.includes(user.role)) return null;
   return <>{children}</>;
