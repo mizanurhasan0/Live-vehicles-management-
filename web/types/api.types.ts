@@ -5,9 +5,17 @@ export type User = {
   name: string;
   phone: string;
   email?: string;
+  photoUrl?: string | null;
   role: Role;
   madrasaId: string;
-  driver?: { id: string };
+  driver?: {
+    id: string;
+    licenseNo?: string;
+    address?: string;
+    vehicle?: Pick<Vehicle, 'id' | 'number' | 'capacity'> & {
+      route?: { name: string };
+    };
+  };
   guardian?: { id: string };
 };
 

@@ -11,18 +11,20 @@ export default function LiveMapInner({
   fallbackCenter,
   fallbackLabel,
   recenter = true,
+  mapClassName = 'h-[400px]',
 }: {
   locations: LocationUpdate[];
   center: [number, number];
   fallbackCenter?: [number, number];
   fallbackLabel?: string;
   recenter?: boolean;
+  mapClassName?: string;
 }) {
   const hasLive = locations.length > 0;
   const mapCenter = hasLive ? [locations[0].lat, locations[0].lng] as [number, number] : center;
 
   return (
-    <MapContainer center={mapCenter} zoom={13} className="h-[400px] w-full rounded-xl">
+    <MapContainer center={mapCenter} zoom={13} className={`w-full rounded-xl ${mapClassName}`}>
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       {recenter && hasLive && (
         <MapRecenter center={[locations[0].lat, locations[0].lng]} />

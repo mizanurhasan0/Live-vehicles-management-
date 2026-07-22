@@ -66,6 +66,7 @@ model User {
   phone        String   @unique
   password     String
   name         String
+  photoUrl     String?
   role         Role
   madrasaId    String
   refreshToken String?

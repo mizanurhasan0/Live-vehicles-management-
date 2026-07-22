@@ -12,12 +12,14 @@ export function LiveMap({
   fallbackCenter,
   fallbackLabel,
   vehicleId,
+  mapClassName,
 }: {
   locations: LocationUpdate[];
   center?: [number, number];
   fallbackCenter?: [number, number];
   fallbackLabel?: string;
   vehicleId?: string;
+  mapClassName?: string;
 }) {
   const c =
     center ??
@@ -32,6 +34,7 @@ export function LiveMap({
       center={c}
       fallbackCenter={fallbackCenter}
       fallbackLabel={fallbackLabel}
+      mapClassName={mapClassName}
     />
   );
 }

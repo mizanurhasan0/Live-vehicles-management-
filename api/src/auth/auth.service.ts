@@ -1,11 +1,53 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { existsSync, mkdirSync, unlinkSync, writeFileSync } from 'fs';
+import { extname, join } from 'path';
 import { AuthUser, JwtPayload } from '../common/types/jwt-payload.type';
 import { PrismaService } from '../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
+
+const ALLOWED_EXT = new Set(['.jpg', '.jpeg', '.png', '.webp']);
+const MAX_BYTES = 2 * 1024 * 1024;
+
+const userProfileSelect = {
+  id: true,
+  name: true,
+  phone: true,
+  email: true,
+  photoUrl: true,
+  role: true,
+  madrasaId: true,
+  driver: {
+    select: {
+      id: true,
+      licenseNo: true,
+      address: true,
+      vehicle: {
+        select: {
+          id: true,
+          number: true,
+          capacity: true,
+          route: { select: { name: true } },
+        },
+      },
+    },
+  },
+  guardian: { select: { id: true } },
+} as const;
+
+type UploadedPhoto = {
+  buffer: Buffer;
+  originalname: string;
+  mimetype: string;
+  size: number;
+};
 
 @Injectable()
 export class AuthService {
@@ -71,19 +113,43 @@ export class AuthService {
   async me(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: {
-        id: true,
-        name: true,
-        phone: true,
-        email: true,
-        role: true,
-        madrasaId: true,
-        driver: { select: { id: true } },
-        guardian: { select: { id: true } },
-      },
+      select: userProfileSelect,
     });
     if (!user) throw new UnauthorizedException();
     return user;
+  }
+
+  async uploadPhoto(userId: string, file: UploadedPhoto) {
+    if (!file) throw new BadRequestException('Photo file required');
+    if (file.size > MAX_BYTES) {
+      throw new BadRequestException('Photo must be under 2MB');
+    }
+    const ext = extname(file.originalname).toLowerCase();
+    if (!ALLOWED_EXT.has(ext)) {
+      throw new BadRequestException('Only JPG, PNG, or WebP allowed');
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new UnauthorizedException();
+
+    const dir = join(process.cwd(), 'uploads', 'avatars');
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+
+    const filename = `${userId}${ext}`;
+    const diskPath = join(dir, filename);
+    writeFileSync(diskPath, file.buffer);
+
+    const photoUrl = `/uploads/avatars/${filename}`;
+    if (user.photoUrl && user.photoUrl !== photoUrl) {
+      const oldPath = join(process.cwd(), user.photoUrl.replace(/^\//, ''));
+      if (existsSync(oldPath)) unlinkSync(oldPath);
+    }
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { photoUrl },
+      select: userProfileSelect,
+    });
   }
 
   async validateUser(payload: JwtPayload): Promise<AuthUser> {

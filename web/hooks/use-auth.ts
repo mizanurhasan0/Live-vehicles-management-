@@ -50,3 +50,21 @@ export function useLogout() {
     },
   });
 }
+
+export function useUploadPhoto() {
+  const qc = useQueryClient();
+  const setAuth = useAuthStore((s) => s.setAuth);
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const refreshToken = useAuthStore((s) => s.refreshToken);
+  return useMutation({
+    mutationFn: (file: File) => authService.uploadPhoto(file),
+    onSuccess: (user) => {
+      if (accessToken && refreshToken) {
+        setAuth(user, accessToken, refreshToken);
+      }
+      qc.setQueryData(['me'], user);
+      toast.success('Photo updated');
+    },
+    onError: () => toast.error('Photo upload failed'),
+  });
+}
