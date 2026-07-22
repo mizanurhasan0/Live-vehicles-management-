@@ -1,0 +1,149 @@
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { Role, TripStatus } from '@prisma/client';
+import { AuthUser } from '../common/types/jwt-payload.type';
+import { PrismaService } from '../prisma/prisma.service';
+import { RedisService } from '../redis/redis.service';
+import { LocationDto } from './dto/tracking.dto';
+import { OsrmService } from './osrm.service';
+import { PhoneGpsSource } from './phone-gps.source';
+
+@Injectable()
+export class TrackingService {
+  constructor(
+    private prisma: PrismaService,
+    private redis: RedisService,
+    private phoneGps: PhoneGpsSource,
+    private osrm: OsrmService,
+  ) {}
+
+  async postLocation(user: AuthUser, dto: LocationDto) {
+    if (user.role !== Role.DRIVER || !user.driverId) {
+      throw new ForbiddenException('Driver only');
+    }
+    const trip = await this.prisma.trip.findFirst({
+      where: { driverId: user.driverId, status: TripStatus.STARTED },
+      include: { vehicle: true },
+    });
+    if (!trip) throw new NotFoundException('No active trip');
+
+    const payload = {
+      ...dto,
+      vehicleId: trip.vehicleId,
+      tripId: trip.id,
+      madrasaId: user.madrasaId,
+      driverId: user.driverId,
+    };
+    await this.phoneGps.ingest(payload);
+    return { message: 'Location updated', vehicleId: trip.vehicleId };
+  }
+
+  async getAllLive(user: AuthUser) {
+    if (user.role !== Role.ADMIN) throw new ForbiddenException();
+    const vehicles = await this.prisma.vehicle.findMany({
+      where: { madrasaId: user.madrasaId, status: { not: 'INACTIVE' } },
+      include: {
+        driver: { include: { user: { select: { name: true, phone: true } } } },
+      },
+    });
+    return Promise.all(
+      vehicles.map(async (v) => ({
+        vehicle: v,
+        location: await this.getCachedLocation(v.id),
+      })),
+    );
+  }
+
+  async getVehicleLive(user: AuthUser, vehicleId: string) {
+    await this.assertVehicleAccess(user, vehicleId);
+    const vehicle = await this.prisma.vehicle.findFirst({
+      where: { id: vehicleId, madrasaId: user.madrasaId },
+      include: {
+        driver: { include: { user: true } },
+        route: { include: { stops: true } },
+      },
+    });
+    if (!vehicle) throw new NotFoundException('Vehicle not found');
+    return { vehicle, location: await this.getCachedLocation(vehicleId) };
+  }
+
+  async getEta(user: AuthUser, vehicleId: string, studentId?: string) {
+    await this.assertVehicleAccess(user, vehicleId);
+    const location = await this.getCachedLocation(vehicleId);
+    if (!location) throw new NotFoundException('No live location');
+
+    let destLat: number;
+    let destLng: number;
+    if (studentId) {
+      const student = await this.prisma.student.findFirst({
+        where: { id: studentId, vehicleId, madrasaId: user.madrasaId },
+      });
+      if (!student?.pickupLat || !student?.pickupLng) {
+        throw new NotFoundException('Student pickup coordinates missing');
+      }
+      destLat = student.pickupLat;
+      destLng = student.pickupLng;
+    } else {
+      const vehicle = await this.prisma.vehicle.findUnique({
+        where: { id: vehicleId },
+        include: {
+          route: { include: { stops: { orderBy: { order: 'asc' }, take: 1 } } },
+        },
+      });
+      const stop = vehicle?.route?.stops[0];
+      if (!stop) throw new NotFoundException('No route stop found');
+      destLat = stop.lat;
+      destLng = stop.lng;
+    }
+
+    const route = await this.osrm.getRoute(
+      location.lng,
+      location.lat,
+      destLng,
+      destLat,
+    );
+    if (route) return { ...route, estimated: false };
+
+    const km = this.haversineKm(location.lat, location.lng, destLat, destLng);
+    const minutes = Math.ceil((km / 25) * 60);
+    return {
+      distanceText: `${km.toFixed(1)} km`,
+      durationText: `${minutes} mins`,
+      durationMinutes: minutes,
+      estimated: true,
+      source: 'haversine' as const,
+    };
+  }
+
+  private async getCachedLocation(vehicleId: string) {
+    const raw = await this.redis.client.get(
+      this.redis.vehicleLocationKey(vehicleId),
+    );
+    return raw ? JSON.parse(raw) : null;
+  }
+
+  private async assertVehicleAccess(user: AuthUser, vehicleId: string) {
+    if (user.role === Role.ADMIN) return;
+    if (user.role === Role.GUARDIAN && user.guardianId) {
+      const student = await this.prisma.student.findFirst({
+        where: { guardianId: user.guardianId, vehicleId },
+      });
+      if (student) return;
+    }
+    throw new ForbiddenException();
+  }
+
+  private haversineKm(lat1: number, lng1: number, lat2: number, lng2: number) {
+    const toRad = (d: number) => (d * Math.PI) / 180;
+    const R = 6371;
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+}
