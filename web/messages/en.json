@@ -1,0 +1,64 @@
+{
+  "app": {
+    "title": "Madrasa Transport",
+    "subtitle": "Live tracking & management"
+  },
+  "auth": {
+    "login": "Login",
+    "phone": "Phone number",
+    "password": "Password",
+    "logout": "Logout",
+    "welcome": "Welcome"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "vehicles": "Vehicles",
+    "drivers": "Drivers",
+    "students": "Students",
+    "guardians": "Guardians",
+    "routes": "Routes",
+    "tracking": "Live Tracking",
+    "trips": "Trips",
+    "payments": "Payments",
+    "reports": "Reports",
+    "children": "Children",
+    "trip": "Trip",
+    "profile": "Profile"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "create": "Create",
+    "edit": "Edit",
+    "delete": "Delete",
+    "loading": "Loading...",
+    "empty": "No data found",
+    "actions": "Actions",
+    "status": "Status",
+    "search": "Search",
+    "month": "Month",
+    "amount": "Amount",
+    "name": "Name",
+    "phone": "Phone",
+    "submit": "Submit",
+    "success": "Success",
+    "error": "Something went wrong"
+  },
+  "driver": {
+    "startTrip": "Start Trip",
+    "endTrip": "End Trip",
+    "activeTrip": "Active Trip",
+    "noTrip": "No active trip",
+    "gpsActive": "GPS Active"
+  },
+  "guardian": {
+    "payFee": "Pay Fee",
+    "liveLocation": "Live Location",
+    "eta": "ETA"
+  },
+  "admin": {
+    "totalIncome": "Monthly Income",
+    "pendingPayments": "Pending Payments",
+    "vehicleUsage": "Vehicle Usage"
+  }
+}

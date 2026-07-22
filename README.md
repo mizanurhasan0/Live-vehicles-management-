@@ -7,7 +7,7 @@ Madrasa Transport Management & Live Tracking System.
 ```
 ├── api/          NestJS backend (REST + WebSocket + Swagger)
 │   └── docs/     API documentation
-└── web/          Next.js frontend (coming soon)
+└── web/          Next.js frontend (Admin + Guardian + Driver)
 ```
 
 ## Backend Quick Start
@@ -38,4 +38,4 @@ Password for all accounts: `password123`
 ## Tech Stack
 
 - **Backend:** NestJS, PostgreSQL, Prisma, Redis, BullMQ, Socket.IO, JWT, bKash, OSRM (free ETA/routing)
-- **Frontend (planned):** Next.js, Tailwind, Shadcn UI
+- **Frontend:** Next.js, TanStack Query, Zustand, next-intl, Leaflet/OSM

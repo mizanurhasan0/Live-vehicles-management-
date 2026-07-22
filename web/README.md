@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Madrasa Transport Web
 
-## Getting Started
+Next.js frontend integrated with the NestJS API.
 
-First, run the development server:
+## Stack
+
+- Next.js 16, Tailwind 4, TanStack Query, Zustand, next-intl (bn/en)
+- Leaflet + OpenStreetMap (free live map)
+- Service + hook pattern
+
+## Setup
 
 ```bash
+cp .env.local.example .env.local
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+API must run on `http://localhost:3001` (`cd ../api && pnpm run start:dev`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## URLs
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| URL | Description |
+|---|---|
+| http://localhost:3000/bn/login | Login (Bangla) |
+| http://localhost:3000/en/login | Login (English) |
+| `/bn/admin` | Admin panel |
+| `/bn/guardian` | Guardian panel |
+| `/bn/driver` | Driver panel |
 
-## Learn More
+## Seed logins (password: `password123`)
 
-To learn more about Next.js, take a look at the following resources:
+| Role | Phone |
+|---|---|
+| Admin | 01700000000 |
+| Driver | 01700000001 |
+| Guardian | 01700000003 |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+components/ui/     Shared UI (Button, Input, Card, Table, Modal)
+components/layout/ PanelLayout, RoleGuard, LangSwitcher
+components/shared/ DataTable, LiveMap, PageHeader
+hooks/             TanStack Query hooks
+services/          API service layer
+stores/            Zustand auth store
+messages/          bn.json, en.json
+```

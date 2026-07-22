@@ -1,0 +1,84 @@
+'use client';
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { paymentService, reportService, trackingService, tripService } from '@/services/tracking.service';
+import { currentMonth } from '@/lib/utils';
+
+export function useLiveVehicles() {
+  return useQuery({
+    queryKey: ['live-vehicles'],
+    queryFn: trackingService.allLive,
+    refetchInterval: 15_000,
+  });
+}
+
+export function useVehicleLive(id?: string) {
+  return useQuery({
+    queryKey: ['vehicle-live', id],
+    queryFn: () => trackingService.vehicleLive(id!),
+    enabled: !!id,
+    refetchInterval: 10_000,
+  });
+}
+
+export function useEta(vehicleId?: string, studentId?: string) {
+  return useQuery({
+    queryKey: ['eta', vehicleId, studentId],
+    queryFn: () => trackingService.eta(vehicleId!, studentId),
+    enabled: !!vehicleId,
+    refetchInterval: 30_000,
+  });
+}
+
+export function useTrips(page = 1) {
+  return useQuery({ queryKey: ['trips', page], queryFn: () => tripService.list(page) });
+}
+
+export function useActiveTrip() {
+  return useQuery({ queryKey: ['active-trip'], queryFn: tripService.active, refetchInterval: 10_000 });
+}
+
+export function useTripMutations() {
+  const qc = useQueryClient();
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['active-trip'] });
+  return {
+    start: useMutation({ mutationFn: tripService.start, onSuccess: invalidate }),
+    end: useMutation({
+      mutationFn: (id: string) => tripService.end(id),
+      onSuccess: invalidate,
+    }),
+    postLocation: useMutation({ mutationFn: trackingService.postLocation }),
+  };
+}
+
+export function usePayments(page = 1, month?: string) {
+  return useQuery({
+    queryKey: ['payments', page, month],
+    queryFn: () => paymentService.list(page, month),
+  });
+}
+
+export function usePaymentMutations() {
+  const qc = useQueryClient();
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['payments'] });
+  return {
+    initiate: useMutation({
+      mutationFn: ({ studentId, month }: { studentId: string; month: string }) =>
+        paymentService.initiate(studentId, month),
+      onSuccess: invalidate,
+    }),
+    execute: useMutation({
+      mutationFn: (paymentId: string) => paymentService.execute(paymentId),
+      onSuccess: invalidate,
+    }),
+  };
+}
+
+export function useReports(month = currentMonth()) {
+  return {
+    income: useQuery({ queryKey: ['income', month], queryFn: () => reportService.income(month) }),
+    pending: useQuery({ queryKey: ['pending', month], queryFn: () => reportService.pending(month) }),
+    usage: useQuery({ queryKey: ['usage'], queryFn: reportService.vehicleUsage }),
+    drivers: useQuery({ queryKey: ['driver-activity'], queryFn: reportService.driverActivity }),
+  };
+}

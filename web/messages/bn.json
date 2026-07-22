@@ -1,0 +1,64 @@
+{
+  "app": {
+    "title": "মাদ্রাসা পরিবহন",
+    "subtitle": "লাইভ ট্র্যাকিং ও ব্যবস্থাপনা"
+  },
+  "auth": {
+    "login": "লগইন",
+    "phone": "মোবাইল নম্বর",
+    "password": "পাসওয়ার্ড",
+    "logout": "লগআউট",
+    "welcome": "স্বাগতম"
+  },
+  "nav": {
+    "dashboard": "ড্যাশবোর্ড",
+    "vehicles": "যানবাহন",
+    "drivers": "চালক",
+    "students": "শিক্ষার্থী",
+    "guardians": "অভিভাবক",
+    "routes": "রুট",
+    "tracking": "লাইভ ট্র্যাকিং",
+    "trips": "ট্রিপ",
+    "payments": "পেমেন্ট",
+    "reports": "রিপোর্ট",
+    "children": "সন্তান",
+    "trip": "ট্রিপ",
+    "profile": "প্রোফাইল"
+  },
+  "common": {
+    "save": "সংরক্ষণ",
+    "cancel": "বাতিল",
+    "create": "তৈরি",
+    "edit": "সম্পাদনা",
+    "delete": "মুছুন",
+    "loading": "লোড হচ্ছে...",
+    "empty": "কোনো ডেটা নেই",
+    "actions": "অ্যাকশন",
+    "status": "স্ট্যাটাস",
+    "search": "খুঁজুন",
+    "month": "মাস",
+    "amount": "পরিমাণ",
+    "name": "নাম",
+    "phone": "ফোন",
+    "submit": "জমা দিন",
+    "success": "সফল",
+    "error": "ত্রুটি হয়েছে"
+  },
+  "driver": {
+    "startTrip": "ট্রিপ শুরু",
+    "endTrip": "ট্রিপ শেষ",
+    "activeTrip": "সক্রিয় ট্রিপ",
+    "noTrip": "কোনো সক্রিয় ট্রিপ নেই",
+    "gpsActive": "GPS সক্রিয়"
+  },
+  "guardian": {
+    "payFee": "ফি পরিশোধ",
+    "liveLocation": "লাইভ লোকেশন",
+    "eta": "আEstimated সময়"
+  },
+  "admin": {
+    "totalIncome": "মাসিক আয়",
+    "pendingPayments": "বকেয়া পেমেন্ট",
+    "vehicleUsage": "যানবাহন ব্যবহার"
+  }
+}
