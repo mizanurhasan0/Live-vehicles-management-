@@ -46,8 +46,6 @@ export function useDriverGeolocation(
     'unsupported',
   );
   const watchRef = useRef<number | null>(null);
-  const vehicleIdRef = useRef(vehicleId);
-  vehicleIdRef.current = vehicleId;
 
   const stopWatch = useCallback(() => {
     if (watchRef.current != null) {
@@ -57,7 +55,7 @@ export function useDriverGeolocation(
   }, []);
 
   const requestLocation = useCallback(async () => {
-    const vid = vehicleIdRef.current;
+    const vid = vehicleId;
     stopWatch();
 
     if (!vid) return;
@@ -108,7 +106,7 @@ export function useDriverGeolocation(
       onError,
       WATCH_OPTS,
     );
-  }, [stopWatch]);
+  }, [vehicleId, stopWatch]);
 
   useEffect(() => {
     if (!enabled || !vehicleId) {

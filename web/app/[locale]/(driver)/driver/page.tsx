@@ -27,7 +27,6 @@ export default function DriverTripPage() {
   const {
     location: gpsLocation,
     gpsState,
-    permission,
     requestLocation,
     isSecure,
   } = useDriverGeolocation(vehicleId, tripActive);
@@ -37,7 +36,10 @@ export default function DriverTripPage() {
 
   const lastPostRef = useRef(0);
   const postMutateRef = useRef(postLocation.mutate);
-  postMutateRef.current = postLocation.mutate;
+
+  useEffect(() => {
+    postMutateRef.current = postLocation.mutate;
+  }, [postLocation.mutate]);
 
   const onSocketUpdate = useCallback(
     (loc: LocationUpdate) => {
@@ -61,7 +63,7 @@ export default function DriverTripPage() {
     const now = Date.now();
     if (now - lastPostRef.current < 8_000) return;
     lastPostRef.current = now;
-    postMutateRef.current(
+    postMutateRef.current( 
       {
         lat: gpsLocation.lat,
         lng: gpsLocation.lng,
