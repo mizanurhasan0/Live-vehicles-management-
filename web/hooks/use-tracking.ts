@@ -36,17 +36,28 @@ export function useTrips(page = 1) {
 }
 
 export function useActiveTrip() {
-  return useQuery({ queryKey: ['active-trip'], queryFn: tripService.active, refetchInterval: 10_000 });
+  return useQuery({
+    queryKey: ['active-trip'],
+    queryFn: tripService.active,
+    staleTime: 60_000,
+    refetchInterval: (query) => (query.state.data ? false : 30_000),
+  });
 }
 
 export function useTripMutations() {
   const qc = useQueryClient();
-  const invalidate = () => qc.invalidateQueries({ queryKey: ['active-trip'] });
   return {
-    start: useMutation({ mutationFn: tripService.start, onSuccess: invalidate }),
+    start: useMutation({
+      mutationFn: tripService.start,
+      onSuccess: (trip) => {
+        qc.setQueryData(['active-trip'], trip);
+      },
+    }),
     end: useMutation({
       mutationFn: (id: string) => tripService.end(id),
-      onSuccess: invalidate,
+      onSuccess: () => {
+        qc.setQueryData(['active-trip'], null);
+      },
     }),
     postLocation: useMutation({ mutationFn: trackingService.postLocation }),
   };

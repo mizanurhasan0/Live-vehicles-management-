@@ -123,7 +123,10 @@
   "admin": {
     "totalIncome": "মাসিক আয়",
     "pendingPayments": "বকেয়া পেমেন্ট",
-    "vehicleUsage": "যানবাহন ব্যবহার"
+    "vehicleUsage": "যানবাহন ব্যবহার",
+    "trackingNoVehicles": "আপনার ফ্লিটে কোনো সক্রিয় যানবাহন নেই।",
+    "trackingSummary": "{total}টি যানবাহনের মধ্যে {live}টিতে লাইভ GPS",
+    "trackingOfflineHint": "লাইভ GPS ছাড়া যানবাহনগুলো তাদের রুটের শুরু পয়েন্টে দেখানো হয়।"
   },
   "map": {
     "driverDetails": "ড্রাইভার",

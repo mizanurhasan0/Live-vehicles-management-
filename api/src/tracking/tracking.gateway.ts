@@ -1,8 +1,8 @@
-import { Logger } from '@nestjs/common';
 import {
   ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
+  OnGatewayInit,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
@@ -12,12 +12,11 @@ import { ConfigService } from '@nestjs/config';
 import { Server, Socket } from 'socket.io';
 import { JwtPayload } from '../common/types/jwt-payload.type';
 import { PrismaService } from '../prisma/prisma.service';
+import { LocationBroadcastService } from './location-broadcast.service';
 import { PhoneGpsSource } from './phone-gps.source';
 
 @WebSocketGateway({ namespace: '/tracking', cors: true })
-export class TrackingGateway implements OnGatewayConnection {
-  private readonly logger = new Logger(TrackingGateway.name);
-
+export class TrackingGateway implements OnGatewayConnection, OnGatewayInit {
   @WebSocketServer()
   server: Server;
 
@@ -26,7 +25,12 @@ export class TrackingGateway implements OnGatewayConnection {
     private config: ConfigService,
     private prisma: PrismaService,
     private phoneGps: PhoneGpsSource,
+    private locationBroadcast: LocationBroadcastService,
   ) {}
+
+  afterInit() {
+    this.locationBroadcast.setServer(this.server);
+  }
 
   async handleConnection(client: Socket) {
     try {
@@ -84,25 +88,7 @@ export class TrackingGateway implements OnGatewayConnection {
       driverId: user.driverId,
     };
     await this.phoneGps.ingest(payload);
-
-    const update = { ...payload, updatedAt: new Date().toISOString() };
-    this.server
-      .to(`madrasa:${user.madrasaId}`)
-      .emit('vehicle:location', update);
-
-    this.server
-      .to(`driver:${user.driverId}`)
-      .emit('vehicle:location', update);
-
-    const students = await this.prisma.student.findMany({
-      where: { vehicleId: trip.vehicleId },
-      select: { guardianId: true },
-    });
-    for (const s of students) {
-      this.server
-        .to(`guardian:${s.guardianId}`)
-        .emit('vehicle:location', update);
-    }
+    await this.locationBroadcast.broadcastLocation(payload);
     return { ok: true };
   }
 }

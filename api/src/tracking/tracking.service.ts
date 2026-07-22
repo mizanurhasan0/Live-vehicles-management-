@@ -10,6 +10,7 @@ import { RedisService } from '../redis/redis.service';
 import { LocationDto } from './dto/tracking.dto';
 import { OsrmService } from './osrm.service';
 import { PhoneGpsSource } from './phone-gps.source';
+import { LocationBroadcastService } from './location-broadcast.service';
 import {
   parseCachedLocation,
   VehicleLocation,
@@ -22,6 +23,7 @@ export class TrackingService {
     private redis: RedisService,
     private phoneGps: PhoneGpsSource,
     private osrm: OsrmService,
+    private locationBroadcast: LocationBroadcastService,
   ) {}
 
   async postLocation(user: AuthUser, dto: LocationDto) {
@@ -42,6 +44,7 @@ export class TrackingService {
       driverId: user.driverId,
     };
     await this.phoneGps.ingest(payload);
+    await this.locationBroadcast.broadcastLocation(payload);
     return { message: 'Location updated', vehicleId: trip.vehicleId };
   }
 
@@ -50,7 +53,12 @@ export class TrackingService {
     const vehicles = await this.prisma.vehicle.findMany({
       where: { madrasaId: user.madrasaId, status: { not: 'INACTIVE' } },
       include: {
-        route: { select: { name: true } },
+        route: {
+          select: {
+            name: true,
+            stops: { orderBy: { order: 'asc' }, take: 1 },
+          },
+        },
         driver: {
           select: {
             licenseNo: true,
@@ -62,7 +70,10 @@ export class TrackingService {
     return Promise.all(
       vehicles.map(async (v) => ({
         vehicle: v,
-        location: await this.getCachedLocation(v.id),
+        location: await this.resolveVehicleLocation(
+          v.id,
+          v.route?.stops[0] ?? null,
+        ),
       })),
     );
   }
@@ -73,24 +84,15 @@ export class TrackingService {
       where: { id: vehicleId, madrasaId: user.madrasaId },
       include: {
         driver: { include: { user: true } },
-        route: { include: { stops: true } },
+        route: { include: { stops: { orderBy: { order: 'asc' }, take: 1 } } },
       },
     });
     if (!vehicle) throw new NotFoundException('Vehicle not found');
 
-    let location: VehicleLocation | null =
-      await this.getCachedLocation(vehicleId);
-    if (!location) {
-      const lastLog = await this.prisma.locationLog.findFirst({
-        where: {
-          trip: { vehicleId, status: TripStatus.STARTED },
-        },
-        orderBy: { createdAt: 'desc' },
-      });
-      if (lastLog) {
-        location = this.locationFromLog(lastLog, vehicleId);
-      }
-    }
+    const location = await this.resolveVehicleLocation(
+      vehicleId,
+      vehicle.route?.stops[0] ?? null,
+    );
 
     return { vehicle, location };
   }
@@ -141,6 +143,37 @@ export class TrackingService {
       estimated: true,
       source: 'haversine' as const,
     };
+  }
+
+  private async resolveVehicleLocation(
+    vehicleId: string,
+    firstStop?: { lat: number; lng: number } | null,
+  ): Promise<VehicleLocation | null> {
+    const cached = await this.getCachedLocation(vehicleId);
+    if (cached) return cached;
+
+    const activeLog = await this.prisma.locationLog.findFirst({
+      where: { trip: { vehicleId, status: TripStatus.STARTED } },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (activeLog) return this.locationFromLog(activeLog, vehicleId);
+
+    const recentLog = await this.prisma.locationLog.findFirst({
+      where: { trip: { vehicleId } },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (recentLog) return this.locationFromLog(recentLog, vehicleId);
+
+    if (firstStop) {
+      return {
+        lat: firstStop.lat,
+        lng: firstStop.lng,
+        vehicleId,
+        source: 'ROUTE_STOP',
+      };
+    }
+
+    return null;
   }
 
   private async getCachedLocation(

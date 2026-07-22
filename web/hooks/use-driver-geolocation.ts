@@ -17,6 +17,16 @@ const WATCH_OPTS: PositionOptions = {
   timeout: 60_000,
 };
 
+const MOVE_THRESHOLD = 0.0003; // ~30m — ignore GPS jitter below this
+
+function movedEnough(prev: LocationUpdate | null, next: LocationUpdate) {
+  if (!prev) return true;
+  return (
+    Math.abs(prev.lat - next.lat) > MOVE_THRESHOLD ||
+    Math.abs(prev.lng - next.lng) > MOVE_THRESHOLD
+  );
+}
+
 function toLocation(pos: GeolocationPosition, vehicleId: string): LocationUpdate {
   return {
     lat: pos.coords.latitude,
@@ -81,9 +91,10 @@ export function useDriverGeolocation(
     setGpsState(perm === 'prompt' ? 'prompt' : 'loading');
 
     const onSuccess = (pos: GeolocationPosition) => {
+      const next = toLocation(pos, vid);
       setGpsState('active');
-      setLocation(toLocation(pos, vid));
       setPermission('granted');
+      setLocation((prev) => (movedEnough(prev, next) ? next : prev));
     };
 
     const onError = (err: GeolocationPositionError) => {
@@ -111,16 +122,20 @@ export function useDriverGeolocation(
   useEffect(() => {
     if (!enabled || !vehicleId) {
       stopWatch();
-      setLocation(null);
-      setGpsState('idle');
       return stopWatch;
     }
 
     readPermission().then((perm) => {
       setPermission(perm);
-      if (perm === 'denied') setGpsState('denied');
-      else if (perm === 'granted') requestLocation();
-      else setGpsState('prompt');
+      if (perm === 'denied') {
+        setGpsState('denied');
+        return;
+      }
+      if (perm === 'granted') {
+        void requestLocation();
+        return;
+      }
+      setGpsState('prompt');
     });
 
     return stopWatch;

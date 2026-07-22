@@ -116,6 +116,7 @@ export type LocationUpdate = {
   speed?: number;
   vehicleId: string;
   updatedAt?: string;
+  source?: string;
 };
 
 export type MapMarkerInfo = {

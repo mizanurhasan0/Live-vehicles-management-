@@ -123,7 +123,10 @@
   "admin": {
     "totalIncome": "Monthly Income",
     "pendingPayments": "Pending Payments",
-    "vehicleUsage": "Vehicle Usage"
+    "vehicleUsage": "Vehicle Usage",
+    "trackingNoVehicles": "No active vehicles in your fleet.",
+    "trackingSummary": "{live} of {total} vehicles with live GPS",
+    "trackingOfflineHint": "Vehicles without live GPS are shown at their route start point."
   },
   "map": {
     "driverDetails": "Driver",

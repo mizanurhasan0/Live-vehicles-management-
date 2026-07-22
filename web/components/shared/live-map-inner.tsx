@@ -1,15 +1,20 @@
 'use client';
 
+import { memo, useMemo } from 'react';
 import { MapContainer, Marker, Popup, TileLayer, Tooltip } from 'react-leaflet';
 import { DriverMarkerDetails } from './driver-marker-details';
 import { autoIcon, createDriverMarkerIcon } from './map-icons';
 import { MapRecenter } from './map-recenter';
+import { MapFitBounds } from './map-fit-bounds';
 import { MapInvalidateSize } from './map-invalidate-size';
 import type { MapMarkerInfo } from '@/types/api.types';
 
-function MapMarker({ marker }: { marker: MapMarkerInfo }) {
+const MapMarker = memo(function MapMarker({ marker }: { marker: MapMarkerInfo }) {
   const { location } = marker;
-  const icon = createDriverMarkerIcon(marker.driver?.photoUrl);
+  const icon = useMemo(
+    () => createDriverMarkerIcon(marker.driver?.photoUrl),
+    [marker.driver?.photoUrl],
+  );
   const hasDetails = !!(marker.driver?.name || marker.vehicle?.number);
 
   return (
@@ -38,7 +43,7 @@ function MapMarker({ marker }: { marker: MapMarkerInfo }) {
       )}
     </Marker>
   );
-}
+});
 
 export default function LiveMapInner({
   markers,
@@ -58,19 +63,23 @@ export default function LiveMapInner({
   mapClassName?: string;
 }) {
   const hasLive = markers.length > 0;
-  const mapCenter = hasLive
-    ? ([markers[0].location.lat, markers[0].location.lng] as [number, number])
-    : center;
+  const markerPoints = markers.map(
+    (m) => [m.location.lat, m.location.lng] as [number, number],
+  );
+  const mapCenter = hasLive ? markerPoints[0] : center;
 
   return (
     <MapContainer center={mapCenter} zoom={13} className={`w-full rounded-xl ${mapClassName}`}>
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <MapInvalidateSize />
-      {recenter && hasLive && (
+      {recenter && hasLive && recenterMode === 'follow' && (
         <MapRecenter
-          center={[markers[0].location.lat, markers[0].location.lng]}
+          center={markerPoints[0]}
           mode={recenterMode}
         />
+      )}
+      {hasLive && recenterMode === 'once' && (
+        <MapFitBounds points={markerPoints} />
       )}
       {markers.map((marker) => (
         <MapMarker
