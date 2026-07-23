@@ -1,0 +1,15 @@
+# ngrok tunnels — web (default) + optional gps-tcp.
+# Start web only:     ./scripts/start-ngrok.sh
+# Start web + TCP:    NGROK_TCP=1 ./scripts/start-ngrok.sh
+# TCP on free ngrok requires card verification (ERR_NGROK_8013 without it).
+
+version: "2"
+tunnels:
+  web:
+    proto: http
+    addr: 3000
+    schemes:
+      - https
+  gps-tcp:
+    proto: tcp
+    addr: 5023

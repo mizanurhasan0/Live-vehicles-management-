@@ -5,7 +5,7 @@ export type LocationPayload = {
   heading?: number;
   source?: string;
   vehicleId: string;
-  tripId: string;
+  tripId?: string;
   madrasaId: string;
   driverId?: string;
 };

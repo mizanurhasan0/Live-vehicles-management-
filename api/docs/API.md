@@ -218,7 +218,26 @@ socket.on('vehicle:location', (data) => console.log(data));
 - Guardian → `guardian:{guardianId}` (child's vehicle only)
 - Driver → `driver:{driverId}`
 
-**Phase 2 ready:** `DeviceGpsSource` stub exists for hardware GPS trackers.
+#### TCP GPS (dev JSON lines)
+
+Raw TCP server on port **5023** (configurable). One JSON object per line:
+
+```json
+{"imei":"867530012345678","lat":23.8103,"lng":90.4125,"speed":25,"heading":180}
+```
+
+- IMEI must match `Vehicle.deviceImei`
+- Updates live map via Redis + WebSocket (no active trip required)
+- Writes `LocationLog` only when vehicle has a `STARTED` trip
+- Server replies: `OK\n` or `ERR …\n`
+
+Full guide: [docs/TCP-GPS.md](../../docs/TCP-GPS.md)
+
+Test:
+
+```bash
+node scripts/send-gps-tcp.mjs --host 127.0.0.1 --port 5023 --imei 867530012345678 --lat 23.81 --lng 90.41
+```
 
 ---
 
@@ -329,7 +348,7 @@ pnpm run lint           # ESLint
 ## Next Steps (Phase 2)
 
 - Self-hosted OSRM (for 100+ vehicles; public OSRM is fine for MVP)
-- GPS hardware device support (`DeviceGpsSource`)
+- Binary GPS protocols (GT06, Teltonika) via TCP parsers
 - Push notifications (FCM)
 - QR/RFID attendance
 - Multi-madrasa SaaS admin panel

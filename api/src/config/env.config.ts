@@ -18,4 +18,9 @@ export default registerAs('app', () => ({
       'http://localhost:3000/bn/guardian/payments/callback',
   },
   osrmBaseUrl: process.env.OSRM_BASE_URL ?? 'https://router.project-osrm.org',
+  gpsTcp: {
+    enabled: process.env.GPS_TCP_ENABLED !== 'false',
+    port: parseInt(process.env.GPS_TCP_PORT ?? '5023', 10),
+    bind: process.env.GPS_TCP_BIND ?? '0.0.0.0',
+  },
 }));

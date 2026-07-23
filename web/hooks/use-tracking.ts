@@ -1,6 +1,7 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '@/stores/auth.store';
 import { paymentService, reportService, trackingService, tripService } from '@/services/tracking.service';
 import { currentMonth } from '@/lib/utils';
 import { toast } from 'sonner';
@@ -36,9 +37,11 @@ export function useTrips(page = 1) {
 }
 
 export function useActiveTrip() {
+  const token = useAuthStore((s) => s.accessToken);
   return useQuery({
     queryKey: ['active-trip'],
     queryFn: tripService.active,
+    enabled: !!token,
     staleTime: 60_000,
     refetchInterval: (query) => (query.state.data ? false : 30_000),
   });

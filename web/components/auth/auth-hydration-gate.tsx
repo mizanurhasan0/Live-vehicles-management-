@@ -17,26 +17,27 @@ export function AuthHydrationGate({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    let active = true;
-
-    const finish = () => {
-      if (active) setReady(true);
-    };
+    const unsub = useAuthStore.persist.onFinishHydration(() => {
+      setReady(true);
+    });
 
     try {
       const result = rehydrateAuthStore();
-      if (result instanceof Promise) {
-        void result.catch(() => useAuthStore.getState().clearAuth()).finally(finish);
+      if (!(result instanceof Promise)) {
+        setReady(true);
       } else {
-        finish();
+        void result.catch(() => useAuthStore.getState().clearAuth());
       }
     } catch {
       useAuthStore.getState().clearAuth();
-      finish();
+      setReady(true);
     }
 
+    const fallback = window.setTimeout(() => setReady(true), 2500);
+
     return () => {
-      active = false;
+      unsub();
+      window.clearTimeout(fallback);
     };
   }, []);
 
@@ -49,4 +50,4 @@ export function AuthHydrationGate({ children }: { children: React.ReactNode }) {
   }
 
   return <>{children}</>;
-}
+};

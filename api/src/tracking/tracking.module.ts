@@ -3,6 +3,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { DeviceGpsSource, PhoneGpsSource } from './phone-gps.source';
 import { LocationBroadcastService } from './location-broadcast.service';
 import { OsrmService } from './osrm.service';
+import { TcpGpsServer } from './tcp-gps.server';
 import { TrackingController } from './tracking.controller';
 import { TrackingGateway } from './tracking.gateway';
 import { TrackingService } from './tracking.service';
@@ -17,7 +18,8 @@ import { TrackingService } from './tracking.service';
     DeviceGpsSource,
     LocationBroadcastService,
     TrackingGateway,
+    TcpGpsServer,
   ],
-  exports: [TrackingService, PhoneGpsSource],
+  exports: [TrackingService, PhoneGpsSource, DeviceGpsSource],
 })
 export class TrackingModule {}

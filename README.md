@@ -37,5 +37,16 @@ Password for all accounts: `password123`
 
 ## Tech Stack
 
-- **Backend:** NestJS, PostgreSQL, Prisma, Redis, BullMQ, Socket.IO, JWT, bKash, OSRM (free ETA/routing)
+- **Backend:** NestJS, PostgreSQL, Prisma, Redis, BullMQ, Socket.IO, TCP GPS (JSON), JWT, bKash, OSRM (free ETA/routing)
 - **Frontend:** Next.js, TanStack Query, Zustand, next-intl, Leaflet/OSM
+
+## Test on phone (ngrok + GPS)
+
+See **[docs/NGROK.md](docs/NGROK.md)** (HTTPS / phone GPS), **[docs/NGINX.md](docs/NGINX.md)** (LAN / nginx), and **[docs/TCP-GPS.md](docs/TCP-GPS.md)** (TCP device GPS + ngrok).
+
+```bash
+# After api + web are running:
+./scripts/start-ngrok.sh
+node scripts/sync-ngrok-env.mjs
+cd web && pnpm dev   # restart
+```

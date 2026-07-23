@@ -34,6 +34,11 @@ export class CreateVehicleDto {
   @IsOptional()
   @IsString()
   routeId?: string;
+
+  @ApiPropertyOptional({ example: '867530012345678' })
+  @IsOptional()
+  @IsString()
+  deviceImei?: string;
 }
 
 export class UpdateVehicleDto extends PartialType(CreateVehicleDto) {}

@@ -121,9 +121,10 @@ model Vehicle {
   number    String
   capacity  Int
   status    VehicleStatus @default(ACTIVE)
-  driverId  String?       @unique
-  routeId   String?
-  createdAt DateTime      @default(now())
+  driverId   String?       @unique
+  routeId    String?
+  deviceImei String?       @unique
+  createdAt  DateTime      @default(now())
   updatedAt DateTime      @updatedAt
 
   madrasa  Madrasa   @relation(fields: [madrasaId], references: [id])

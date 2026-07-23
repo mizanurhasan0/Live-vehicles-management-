@@ -1,13 +1,18 @@
 import axios, { type AxiosRequestConfig } from 'axios';
 import { useAuthStore, hasAuthStoreHydrated } from '@/stores/auth.store';
+import { isNgrokUrl, NGROK_SKIP_BROWSER_WARNING } from '@/lib/ngrok';
+import { getApiBaseUrl } from '@/lib/public-env';
 
-const baseURL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api';
-
-export const api = axios.create({ baseURL, timeout: 15000 });
+export const api = axios.create({ timeout: 15000 });
 
 api.interceptors.request.use((config) => {
+  const baseURL = getApiBaseUrl();
+  config.baseURL = baseURL;
   const token = useAuthStore.getState().accessToken;
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (isNgrokUrl(baseURL)) {
+    Object.assign(config.headers, NGROK_SKIP_BROWSER_WARNING);
+  }
   return config;
 });
 
@@ -30,6 +35,7 @@ api.interceptors.response.use(
     original._retry = true;
 
     try {
+      const baseURL = getApiBaseUrl();
       const { data } = await axios.post(`${baseURL}/auth/refresh`, {
         refreshToken,
       });

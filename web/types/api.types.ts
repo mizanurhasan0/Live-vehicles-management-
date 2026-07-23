@@ -39,6 +39,7 @@ export type Vehicle = {
   status: string;
   driverId?: string;
   routeId?: string;
+  deviceImei?: string | null;
   driver?: {
     licenseNo?: string;
     user?: { name: string; phone: string; photoUrl?: string | null };

@@ -111,7 +111,7 @@ async function main() {
     ['DHK-1001', 'DHK-1002', 'DHK-1003', 'DHK-1004'].map((number, i) =>
       prisma.vehicle.upsert({
         where: { madrasaId_number: { madrasaId: madrasa.id, number } },
-        update: {},
+        update: i === 0 ? { deviceImei: '867530012345678' } : {},
         create: {
           number,
           capacity: 30,
@@ -119,6 +119,7 @@ async function main() {
           driverId: drivers[i]?.id,
           routeId: routes[i]?.id,
           status: VehicleStatus.ACTIVE,
+          deviceImei: i === 0 ? '867530012345678' : undefined,
         },
       }),
     ),
