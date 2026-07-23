@@ -7,7 +7,8 @@ Madrasa Transport Management & Live Tracking System.
 ```
 ├── api/          NestJS backend (REST + WebSocket + Swagger)
 │   └── docs/     API documentation
-└── web/          Next.js frontend (Admin + Guardian + Driver)
+├── web/          Next.js frontend (Admin + Guardian + Driver web)
+└── mobile/       Expo React Native (Driver + Guardian native app)
 ```
 
 ## Backend Quick Start
@@ -42,7 +43,16 @@ Password for all accounts: `password123`
 
 ## Test on phone (ngrok + GPS)
 
-See **[docs/NGROK.md](docs/NGROK.md)** (HTTPS / phone GPS), **[docs/NGINX.md](docs/NGINX.md)** (LAN / nginx), and **[docs/TCP-GPS.md](docs/TCP-GPS.md)** (TCP device GPS + ngrok).
+See **[docs/NGROK.md](docs/NGROK.md)**, **[docs/NGINX.md](docs/NGINX.md)**, **[docs/TCP-GPS.md](docs/TCP-GPS.md)**, **[docs/MOBILE.md](docs/MOBILE.md)**.
+
+## Mobile app (Expo)
+
+```bash
+cd mobile && cp .env.example .env   # set LAN IP
+npm install && npm start
+```
+
+Driver `01700000001` / Guardian `01700000003` — password `password123`.
 
 ```bash
 # After api + web are running:
