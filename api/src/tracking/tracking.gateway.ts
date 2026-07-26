@@ -10,12 +10,18 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Server, Socket } from 'socket.io';
-import { JwtPayload } from '../common/types/jwt-payload.type';
+import { JwtPayload, type AuthUser } from '../common/types/jwt-payload.type';
+import { resolveCorsOptions } from '../config/cors.config';
 import { PrismaService } from '../prisma/prisma.service';
 import { LocationBroadcastService } from './location-broadcast.service';
 import { PhoneGpsSource } from './phone-gps.source';
+import {
+  getHandshakeToken,
+  setTrackingSocketUser,
+  getTrackingSocketData,
+} from './tracking-socket.types';
 
-@WebSocketGateway({ namespace: '/tracking', cors: true })
+@WebSocketGateway({ namespace: '/tracking', cors: resolveCorsOptions() })
 export class TrackingGateway implements OnGatewayConnection, OnGatewayInit {
   @WebSocketServer()
   server: Server;
@@ -34,9 +40,9 @@ export class TrackingGateway implements OnGatewayConnection, OnGatewayInit {
 
   async handleConnection(client: Socket) {
     try {
-      const token =
-        client.handshake.auth?.token ??
-        client.handshake.headers.authorization?.replace('Bearer ', '');
+      const token = getHandshakeToken(client);
+      if (!token) return client.disconnect();
+
       const payload = this.jwt.verify<JwtPayload>(token, {
         secret: this.config.get('app.jwtSecret'),
       });
@@ -46,20 +52,21 @@ export class TrackingGateway implements OnGatewayConnection, OnGatewayInit {
       });
       if (!user?.isActive) return client.disconnect();
 
-      client.data.user = {
+      const socketUser: AuthUser = {
         sub: user.id,
         role: user.role,
         madrasaId: user.madrasaId,
         driverId: user.driver?.id,
         guardianId: user.guardian?.id,
       };
+      setTrackingSocketUser(client, socketUser);
 
       if (user.role === 'ADMIN') {
-        client.join(`madrasa:${user.madrasaId}`);
+        void client.join(`madrasa:${user.madrasaId}`);
       } else if (user.role === 'GUARDIAN' && user.guardian) {
-        client.join(`guardian:${user.guardian.id}`);
+        void client.join(`guardian:${user.guardian.id}`);
       } else if (user.role === 'DRIVER' && user.driver) {
-        client.join(`driver:${user.driver.id}`);
+        void client.join(`driver:${user.driver.id}`);
       }
     } catch {
       client.disconnect();
@@ -72,7 +79,7 @@ export class TrackingGateway implements OnGatewayConnection, OnGatewayInit {
     @MessageBody()
     body: { lat: number; lng: number; speed?: number; heading?: number },
   ) {
-    const user = client.data.user;
+    const user = getTrackingSocketData(client).user;
     if (!user?.driverId) return { error: 'Unauthorized' };
 
     const trip = await this.prisma.trip.findFirst({

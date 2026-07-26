@@ -1,5 +1,21 @@
 /** Hostnames allowed to load Next.js dev assets (/_next/*) via proxy/nginx/LAN. */
 
+import os from 'os';
+
+function collectLocalNetworkHosts(): string[] {
+  const hosts = new Set<string>();
+  for (const interfaces of Object.values(os.networkInterfaces())) {
+    if (!interfaces) continue;
+    for (const iface of interfaces) {
+      const isIPv4 = String(iface.family).includes('4') && !iface.internal;
+      if (isIPv4 && !iface.internal) {
+        hosts.add(iface.address);
+      }
+    }
+  }
+  return [...hosts];
+}
+
 export function collectAllowedDevOrigins(): string[] {
   const hosts = new Set<string>();
 
@@ -21,6 +37,12 @@ export function collectAllowedDevOrigins(): string[] {
       hosts.add(new URL(value).hostname);
     } catch {
       /* ignore */
+    }
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
+    for (const ip of collectLocalNetworkHosts()) {
+      hosts.add(ip);
     }
   }
 
