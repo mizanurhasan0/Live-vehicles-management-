@@ -35,7 +35,7 @@ export class CreateVehicleDto {
   @IsString()
   routeId?: string;
 
-  @ApiPropertyOptional({ example: '867530012345678' })
+  @ApiPropertyOptional({ example: '869343040629929' })
   @IsOptional()
   @IsString()
   deviceImei?: string;

@@ -22,5 +22,6 @@ export default registerAs('app', () => ({
     enabled: process.env.GPS_TCP_ENABLED !== 'false',
     port: parseInt(process.env.GPS_TCP_PORT ?? '5023', 10),
     bind: process.env.GPS_TCP_BIND ?? '0.0.0.0',
+    mode: (process.env.GPS_TCP_MODE ?? 'auto') as 'auto' | 'json' | 'gt06',
   },
 }));

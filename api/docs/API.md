@@ -223,7 +223,7 @@ socket.on('vehicle:location', (data) => console.log(data));
 Raw TCP server on port **5023** (configurable). One JSON object per line:
 
 ```json
-{"imei":"867530012345678","lat":23.8103,"lng":90.4125,"speed":25,"heading":180}
+{"imei":"869343040629929","lat":23.8103,"lng":90.4125,"speed":25,"heading":180}
 ```
 
 - IMEI must match `Vehicle.deviceImei`
@@ -236,7 +236,7 @@ Full guide: [docs/TCP-GPS.md](../../docs/TCP-GPS.md)
 Test:
 
 ```bash
-node scripts/send-gps-tcp.mjs --host 127.0.0.1 --port 5023 --imei 867530012345678 --lat 23.81 --lng 90.41
+node scripts/send-gps-tcp.mjs --host 127.0.0.1 --port 5023 --imei 869343040629929 --lat 23.81 --lng 90.41
 ```
 
 ---

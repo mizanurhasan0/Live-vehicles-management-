@@ -3,7 +3,7 @@
  * Send a newline-delimited JSON GPS packet to the TCP GPS server.
  *
  * Usage:
- *   node scripts/send-gps-tcp.mjs --host 127.0.0.1 --port 5023 --imei 867530012345678 --lat 23.81 --lng 90.41
+ *   node scripts/send-gps-tcp.mjs --host 127.0.0.1 --port 5023 --imei 869343040629929 --lat 23.81 --lng 90.41
  */
 
 import { connect } from 'net';
@@ -21,7 +21,7 @@ function parseArgs(argv) {
 const args = parseArgs(process.argv);
 const host = args.host ?? '127.0.0.1';
 const port = Number(args.port ?? '5023');
-const imei = args.imei ?? '867530012345678';
+const imei = args.imei ?? '869343040629929';
 const lat = Number(args.lat ?? '23.8103');
 const lng = Number(args.lng ?? '90.4125');
 const speed = args.speed !== undefined ? Number(args.speed) : 25;
