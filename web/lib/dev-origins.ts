@@ -1,4 +1,4 @@
-/** Hostnames allowed to load Next.js dev assets (/_next/*) via proxy/ngrok/nginx. */
+/** Hostnames allowed to load Next.js dev assets (/_next/*) via proxy/nginx/LAN. */
 
 export function collectAllowedDevOrigins(): string[] {
   const hosts = new Set<string>();

@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   ...(allowedDevOrigins.length > 0 ? { allowedDevOrigins } : {}),
   async rewrites() {
-    // Proxy API + Socket.IO through Next.js :3000 (ngrok / nginx / LAN — one public URL)
+    // Proxy API + Socket.IO through Next.js :3000 (nginx / LAN — one public URL)
     return [
       {
         source: '/backend-api/:path*',

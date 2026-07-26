@@ -34,17 +34,6 @@ npm start
 
 Scan QR with **Expo Go** (Android/iOS). Do **not** press `w` for web — maps/GPS need a real device. Web shows a coordinate fallback only.
 
-## ngrok (optional)
-
-If LAN is blocked, use ngrok HTTPS for API:
-
-```env
-EXPO_PUBLIC_API_URL=https://xxxx.ngrok-free.dev/backend-api
-EXPO_PUBLIC_WS_URL=https://xxxx.ngrok-free.dev
-```
-
-Restart Expo after changing `.env`.
-
 ## Features
 
 | Role | Tabs |

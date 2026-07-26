@@ -1,4 +1,4 @@
-/** Resolve API/WS base URLs for localhost, ngrok, nginx, or LAN proxy access. */
+/** Resolve API/WS base URLs for localhost, nginx, or LAN proxy access. */
 
 import { isLocalDevHost } from '@/lib/dev-origins';
 

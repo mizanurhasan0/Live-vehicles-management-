@@ -28,7 +28,7 @@ export default function DriverTripPage() {
 
   if (userError || !user) {
     return (
-      <Loading label="Could not reach API — check nginx/ngrok host in ALLOWED_DEV_ORIGINS and restart web dev" />
+      <Loading label="Could not reach API — check LAN/nginx host in ALLOWED_DEV_ORIGINS and restart web dev" />
     );
   }
 

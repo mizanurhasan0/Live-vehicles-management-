@@ -4,7 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:ngrok": "node ../scripts/sync-ngrok-env.mjs && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"

@@ -1,4 +1,4 @@
-# nginx + phone access (same fix as ngrok)
+# nginx + phone access
 
 If you open the app via **nginx** (or LAN IP) and only see **Loading...**, Next.js dev is blocking JavaScript bundles.
 
@@ -61,7 +61,7 @@ Reload nginx: `sudo nginx -s reload`
 http://192.168.1.105/bn/login
 ```
 
-> **GPS on phone:** HTTP LAN IP may block geolocation in Chrome. Use **ngrok HTTPS** or **HTTPS nginx** for driver GPS.
+> **GPS on phone:** HTTP LAN IP may block geolocation in Chrome. Use **HTTPS nginx** for driver GPS.
 
 ## Verify
 
@@ -74,5 +74,5 @@ http://192.168.1.105/bn/login
 Comma-separate:
 
 ```env
-ALLOWED_DEV_ORIGINS=192.168.1.105,peso-tackle-illicitly.ngrok-free.dev,mymadrasa.local
+ALLOWED_DEV_ORIGINS=192.168.1.105,mymadrasa.local
 ```

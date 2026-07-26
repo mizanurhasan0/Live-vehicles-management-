@@ -1,6 +1,5 @@
 import axios, { type AxiosRequestConfig } from 'axios';
 import { useAuthStore, hasAuthStoreHydrated } from '@/stores/auth.store';
-import { isNgrokUrl, NGROK_SKIP_BROWSER_WARNING } from '@/lib/ngrok';
 import { getApiBaseUrl } from '@/lib/public-env';
 
 export const api = axios.create({ timeout: 15000 });
@@ -10,9 +9,6 @@ api.interceptors.request.use((config) => {
   config.baseURL = baseURL;
   const token = useAuthStore.getState().accessToken;
   if (token) config.headers.Authorization = `Bearer ${token}`;
-  if (isNgrokUrl(baseURL)) {
-    Object.assign(config.headers, NGROK_SKIP_BROWSER_WARNING);
-  }
   return config;
 });
 

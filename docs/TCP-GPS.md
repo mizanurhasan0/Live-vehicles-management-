@@ -59,31 +59,6 @@ Expected: `Server: OK`
 
 Open admin **Live Tracking** — marker for DHK-1001 should appear (no trip required).
 
-## 4. Test via ngrok TCP (optional)
-
-Requires **card verification** on ngrok free (`ERR_NGROK_8013` without it). For most dev, **local test (section 3) is enough**.
-
-```bash
-NGROK_TCP=1 ./scripts/start-ngrok.sh   # web + gps-tcp
-node scripts/sync-ngrok-env.mjs
-```
-
-Example output:
-
-```
-GPS TCP: 0.tcp.ngrok.io:17123
-```
-
-Send through the tunnel:
-
-```bash
-node scripts/send-gps-tcp.mjs \
-  --host 0.tcp.ngrok.io --port 17123 \
-  --imei 867530012345678 --lat 23.81 --lng 90.41
-```
-
-Web app still uses the **HTTPS** ngrok URL from `sync-ngrok-env.mjs` (unchanged).
-
 ## Architecture
 
 ```
@@ -95,23 +70,13 @@ TCP client → :5023 (TcpGpsServer)
 
 Phone GPS (`POST /tracking/location`) is unchanged.
 
-## ngrok free tier
-
-| Command | Tunnels |
-|---------|---------|
-| `./scripts/start-ngrok.sh` | **web only** (phone HTTPS — default) |
-| `NGROK_TCP=1 ./scripts/start-ngrok.sh` | web + gps-tcp (**card required** on free) |
-
-If TCP fails with `ERR_NGROK_8013`, use web-only ngrok for the app and test TCP locally on `127.0.0.1:5023`.
-
 ## Troubleshooting
 
 | Issue | Fix |
 |-------|-----|
 | `ERR unknown or inactive IMEI` | Set `deviceImei` on vehicle; re-seed or admin UI |
 | Connection refused | API running? `GPS_TCP_ENABLED=true`? |
-| ngrok TCP missing | `./scripts/start-ngrok.sh` must start `web gps-tcp` |
 | Map empty | Redis TTL 5 min — send again; refresh admin tracking |
 | `ERR invalid JSON` | One JSON object per line, ending with `\n` |
 
-See also: [NGROK.md](./NGROK.md), [api/docs/API.md](../api/docs/API.md).
+See also: [api/docs/API.md](../api/docs/API.md).

@@ -41,9 +41,9 @@ Password for all accounts: `password123`
 - **Backend:** NestJS, PostgreSQL, Prisma, Redis, BullMQ, Socket.IO, TCP GPS (JSON), JWT, bKash, OSRM (free ETA/routing)
 - **Frontend:** Next.js, TanStack Query, Zustand, next-intl, Leaflet/OSM
 
-## Test on phone (ngrok + GPS)
+## Test on phone (LAN / nginx)
 
-See **[docs/NGROK.md](docs/NGROK.md)**, **[docs/NGINX.md](docs/NGINX.md)**, **[docs/TCP-GPS.md](docs/TCP-GPS.md)**, **[docs/MOBILE.md](docs/MOBILE.md)**.
+See **[docs/NGINX.md](docs/NGINX.md)**, **[docs/TCP-GPS.md](docs/TCP-GPS.md)**, **[docs/MOBILE.md](docs/MOBILE.md)**.
 
 ## Mobile app (Expo)
 
@@ -53,10 +53,3 @@ npm install && npm start
 ```
 
 Driver `01700000001` / Guardian `01700000003` — password `password123`.
-
-```bash
-# After api + web are running:
-./scripts/start-ngrok.sh
-node scripts/sync-ngrok-env.mjs
-cd web && pnpm dev   # restart
-```

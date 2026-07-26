@@ -4,7 +4,6 @@
  *
  * Usage:
  *   node scripts/send-gps-tcp.mjs --host 127.0.0.1 --port 5023 --imei 867530012345678 --lat 23.81 --lng 90.41
- *   node scripts/send-gps-tcp.mjs --host 0.tcp.ngrok.io --port 12345 --imei 867530012345678 --lat 23.81 --lng 90.41
  */
 
 import { connect } from 'net';
